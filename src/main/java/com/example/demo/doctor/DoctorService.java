@@ -2,13 +2,13 @@ package com.example.demo.doctor;
 
 import com.example.demo.address.AddressEntity;
 import com.example.demo.address.AddressRepository;
+import com.example.demo.jwt.JwtService;
 import com.example.demo.specialization.SpecializationEntity;
 import com.example.demo.specialization.SpecializationRepository;
-import com.example.demo.user.auth.AuthResponse;
-import com.example.demo.jwt.JwtService;
 import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.auth.AuthResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,7 +39,7 @@ public class DoctorService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(request.getUsername());
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setRole(String.valueOf(Role.DOCTOR));
+        userEntity.setRole(Role.DOCTOR);
         userEntity.setEmail(request.getEmail());
         userRepository.save(userEntity);
 

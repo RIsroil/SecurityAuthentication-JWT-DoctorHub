@@ -18,10 +18,14 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://doctors-db2:5432/doctors_backend2
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO= update
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
       - JAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
     depends_on:
       - doctors-db2
+      - minio
     networks:
       - secure-network
     volumes:
@@ -33,7 +37,7 @@ services:
     image: postgres:16-alpine
     container_name: doctors-db2
     ports:
-      - "5435:5432"  # local:container port, boshqa port
+      - "5435:5432"  # local:container port
     environment:
       - POSTGRES_DB=doctors_backend2
       - POSTGRES_USER=postgres
@@ -46,8 +50,27 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"  # MinIO server
+      - "9001:9001"  # MinIO Console (UI)
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server --console-address ":9001" /data
+    volumes:
+      - minio_data:/data
+    networks:
+      - secure-network
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+
 volumes:
   doctors_data:
+  minio_data:
 
 networks:
   secure-network:

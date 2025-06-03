@@ -1,7 +1,6 @@
 package com.example.demo.patient;
 
 import com.example.demo.address.AddressEntity;
-import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,7 +1,9 @@
 package com.example.demo.doctor;
 
 import com.example.demo.address.AddressEntity;
+import com.example.demo.certificate.CertificateEntity;
 import com.example.demo.specialization.SpecializationEntity;
+import com.example.demo.user.Languages;
 import com.example.demo.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,6 +39,23 @@ public class DoctorEntity {
 
     private String phone;
 
+    private int experienceYears;
+
+    private Double orderFees;
+
+    @ElementCollection(targetClass = Languages.class)
+    @CollectionTable(name = "doctor_languages", joinColumns = @JoinColumn(name = "doctor_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language")
+    private List<Languages> languagesSpoken;
+
+
+    private String educationalBackground;
+
+    @Column(nullable = false)
+    private boolean isVerified = false; // faqat VERIFIED sertifikat bo‘lsa true bo‘ladi
+
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "doctor_specializations",
@@ -45,7 +64,8 @@ public class DoctorEntity {
     )
     private List<SpecializationEntity> specializationIds;
 
-    private int experienceYears;
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CertificateEntity> certificates;
 
     @OneToOne
     @JoinColumn(name = "user_id")
