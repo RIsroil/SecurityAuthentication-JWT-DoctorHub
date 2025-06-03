@@ -12,14 +12,16 @@ import com.example.demo.specialization.SpecializationRepository;
 import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.profile.dto.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class ProfileController {
 
@@ -29,7 +31,7 @@ public class ProfileController {
     private final DoctorRepository doctorRepository;
     private final AddressRepository addressRepository;
     private final SpecializationRepository specializationRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(@RequestParam String accessToken) {
         String username;
@@ -91,12 +93,8 @@ public class ProfileController {
         return ResponseEntity.badRequest().body("Role noto‘g‘ri: " + role);
     }
 
-
     @PatchMapping("/update")
-    public ResponseEntity<?> updateProfile(
-            @RequestParam String accessToken,
-            @RequestBody ProfileUpdateRequest request
-    ) {
+    public ResponseEntity<?> updateProfile(@RequestParam String accessToken, @RequestBody ProfileUpdateRequest request) {
         String username;
         try {
             username = jwtService.extractUsername(accessToken);
@@ -160,5 +158,27 @@ public class ProfileController {
         } else {
             return ResponseEntity.badRequest().body("Role noto‘g‘ri: " + role);
         }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestParam String accessToken, @RequestBody ChangePasswordRequest request) {
+        String username;
+        try {
+            username = jwtService.extractUsername(accessToken);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
+        }
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.badRequest().body("Eski parol noto‘g‘ri");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Parol muvaffaqiyatli yangilandi");
     }
 }

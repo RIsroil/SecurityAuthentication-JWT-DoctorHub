@@ -39,6 +39,22 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateSimpleToken(UserEntity user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+
+        Date expirationDate = new Date(System.currentTimeMillis() + accessTokenExpiration);
+        claims.put("accessTokenExpiresAt", expirationDate.getTime()); // Add custom expiration timestamp
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(expirationDate) // Standard `exp` field
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
     public String generateRefreshToken(UserEntity user) {
         Date refreshExpirationDate = new Date(System.currentTimeMillis() + refreshTokenExpiration);
