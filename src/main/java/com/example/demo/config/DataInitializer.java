@@ -4,8 +4,8 @@ import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 
 @Component
@@ -29,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
             UserEntity admin = new UserEntity();
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setRole(String.valueOf(Role.ADMIN));
+            admin.setRole(Role.ADMIN);
             userRepository.save(admin);
             System.out.println("✔ Admin user created: " + adminEmail);
         }

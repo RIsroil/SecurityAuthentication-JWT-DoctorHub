@@ -31,7 +31,9 @@ public class UserEntity implements UserDetails {
 
     @NotBlank(message = "Password is required")
     private String password;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

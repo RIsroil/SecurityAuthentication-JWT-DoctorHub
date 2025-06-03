@@ -1,5 +1,6 @@
 package com.example.demo.user.profile;
 
+import com.example.demo.user.Languages;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -13,8 +14,13 @@ public class ProfileUpdateRequest {
     private String gender;
     private String phone;
     private Long addressId;
-    private Integer experienceYears; // faqat doctor uchun
-    private List<Long> specializationIds; // 🔥 Doctor uchun yangi qo‘shildi
+
+    // faqat doctor uchun
+    private Integer experienceYears;
+    private List<Long> specializationIds;
+    private Double orderFees;
+    private List<Languages> languagesSpoken;
+    private String educationalBackground;
 
 
 }

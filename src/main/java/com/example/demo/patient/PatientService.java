@@ -2,11 +2,11 @@ package com.example.demo.patient;
 
 import com.example.demo.address.AddressEntity;
 import com.example.demo.address.AddressRepository;
-import com.example.demo.user.auth.AuthResponse;
 import com.example.demo.jwt.JwtService;
 import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.auth.AuthResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +34,7 @@ public class PatientService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(request.getUsername());
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setRole(String.valueOf(Role.PATIENT));
+        userEntity.setRole(Role.PATIENT);
         userEntity.setEmail(request.getEmail());
         userRepository.save(userEntity);
 
