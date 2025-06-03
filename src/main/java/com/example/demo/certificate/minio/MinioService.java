@@ -37,7 +37,7 @@ public class MinioService {
 
 
     public String getPermanentUrl(String fileName) {
-        return "http://217.114.3.161:9001/" + bucketName + "/" + fileName;
+        return "http://217.114.3.161:9000/" + bucketName + "/" + fileName;
     }
 
     public String uploadFile(MultipartFile file) throws Exception {
