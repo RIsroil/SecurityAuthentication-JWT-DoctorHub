@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doctors-backend2:latest
+    container_name: doctors-backend2
+    restart: always
+    ports:
+      - "9090:9090"
+    environment:
+      - POSTGRES_DB=doctors_backend2
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - SPRING_PROFILES_ACTIVE=production
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://doctors-db2:5432/doctors_backend2
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO= update
+      - JAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - doctors-db2
+    networks:
+      - secure-network
+    volumes:
+      - ./logs:/app/logs
+    security_opt:
+      - no-new-privileges:true
+
+  doctors-db2:
+    image: postgres:16-alpine
+    container_name: doctors-db2
+    ports:
+      - "5434:5432"  # local:container port, boshqa port
+    environment:
+      - POSTGRES_DB=doctors_backend2
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - doctors_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - secure-network
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  doctors_data:
+
+networks:
+  secure-network:
+    driver: bridge
