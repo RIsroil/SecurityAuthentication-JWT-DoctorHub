@@ -41,7 +41,16 @@ public class MinioService {
     }
 
     public String uploadFile(MultipartFile file) throws Exception {
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename().replace(" ", "_");
+        // Fayl kengaytmasini olish (.mp4, .jpg, .png va h.k.)
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        // UUID asosida unikal fayl nomi yaratish
+        String fileName = UUID.randomUUID().toString() + extension;
 
         // Faylni Minio serveriga yuklash
         try (InputStream inputStream = file.getInputStream()) {
@@ -55,7 +64,7 @@ public class MinioService {
             );
         }
 
-        saveFileLocally(file, fileName);
+        saveFileLocally(file, fileName); // Shu fayl nomi bilan lokalga ham saqlanadi
 
         return getPermanentUrl(fileName);
     }
