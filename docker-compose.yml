@@ -33,7 +33,7 @@ services:
     image: postgres:16-alpine
     container_name: doctors-db2
     ports:
-      - "5434:5432"  # local:container port, boshqa port
+      - "5435:5432"  # local:container port, boshqa port
     environment:
       - POSTGRES_DB=doctors_backend2
       - POSTGRES_USER=postgres
