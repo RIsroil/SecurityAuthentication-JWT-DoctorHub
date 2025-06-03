@@ -9,7 +9,7 @@ services:
     container_name: doctors-backend2
     restart: always
     ports:
-      - "9090:9090"
+      - "9090:9091"
     environment:
       - POSTGRES_DB=doctors_backend2
       - POSTGRES_USER=postgres
