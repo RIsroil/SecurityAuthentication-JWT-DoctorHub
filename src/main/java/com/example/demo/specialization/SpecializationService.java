@@ -20,7 +20,6 @@ public class SpecializationService {
         System.out.println("Bazaga saqlandi: " + entity.getSpecializationName());
     }
 
-
     public void delete(Long id) {
         specializationRepository.deleteById(id);
     }

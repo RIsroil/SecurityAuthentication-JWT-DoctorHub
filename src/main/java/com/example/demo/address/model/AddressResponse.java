@@ -9,6 +9,5 @@ public class AddressResponse {
     private String addressLocationLink;
     private Double latitude;
     private Double longitude;
-    // Getters & Setters
 }
 

@@ -12,6 +12,7 @@ import com.example.demo.specialization.SpecializationRepository;
 import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.auth.AuthHelperService;
 import com.example.demo.user.profile.dto.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,12 +32,10 @@ public class ProfileService {
     private final AddressRepository addressRepository;
     private final SpecializationRepository specializationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthHelperService authHelperService;
 
     public UserProfileResponse getProfile(String accessToken) {
-        String username = jwtService.extractUsername(accessToken);
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromToken(accessToken);
 
         Role role = user.getRole();
 
@@ -84,20 +83,11 @@ public class ProfileService {
                     .role(Role.PATIENT.name())
                     .build();
         }
-
         throw new RuntimeException("Role noto‘g‘ri: " + role);
     }
 
     public ResponseEntity<?> updateProfile(String accessToken, ProfileUpdateRequest request) {
-        String username;
-        try {
-            username = jwtService.extractUsername(accessToken);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromToken(accessToken);
 
         Role role = user.getRole();
 
@@ -121,8 +111,6 @@ public class ProfileService {
             if( request.getOrderFees() != null) doctor.setOrderFees(request.getOrderFees());
             if(request.getEducationalBackground() != null) doctor.setEducationalBackground(request.getEducationalBackground());
 
-
-            // 🔥 Mutaxassisliklarni yangilash
             if (request.getSpecializationIds() != null) {
                 List<SpecializationEntity> updatedSpecializations = specializationRepository.findAllById(request.getSpecializationIds());
                 if (updatedSpecializations.isEmpty()) {
@@ -158,15 +146,7 @@ public class ProfileService {
     }
 
     public ResponseEntity<?> changePassword( String accessToken, ChangePasswordRequest request) {
-        String username;
-        try {
-            username = jwtService.extractUsername(accessToken);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromToken(accessToken);
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Eski parol noto‘g‘ri");

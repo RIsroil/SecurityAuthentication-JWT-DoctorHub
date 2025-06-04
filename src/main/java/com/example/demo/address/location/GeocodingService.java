@@ -49,18 +49,6 @@ public class GeocodingService {
         }
     }
 
-    public double[] getCoordinatesFromAddress(String region, String city, String branchName) {
-        String fullAddress = branchName + ", " + city + ", " + region;
-        double[] result = tryGeocode(fullAddress);
-        if (result != null) return result;
-
-        String fallbackAddress = city + ", " + region;
-        result = tryGeocode(fallbackAddress);
-        if (result != null) return result;
-
-        return new double[]{41.3111, 69.2797};
-    }
-
     public double[] getCoordinatesFromAddress(String addressOrLink) {
         if (addressOrLink.contains("maps.google.com") || addressOrLink.contains("google.com/maps")) {
             return extractCoordinatesFromLink(addressOrLink);

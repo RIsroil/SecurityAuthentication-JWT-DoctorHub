@@ -60,12 +60,10 @@ public class DoctorService {
         doctorEntity.setPhone(request.getPhone());
         doctorEntity.setSpecializationIds(specializations); // ✅ correct
         doctorEntity.setUser(userEntity);
-
         doctorRepository.save(doctorEntity);
 
         String accessToken = jwtService.generateAccessToken(userEntity);
         String refreshToken = jwtService.generateRefreshToken(userEntity);
-
         return new AuthResponse(accessToken, refreshToken);
     }
 

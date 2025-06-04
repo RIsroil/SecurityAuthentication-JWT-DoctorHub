@@ -15,12 +15,11 @@ public class MinioConfig {
     private String secretKey;
     private String bucketName;
 
-
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint("http://217.114.3.161:9000") // MinIO server manzili
-                .credentials("minioadmin", "minioadmin") // login va parol
+                .endpoint("http://217.114.3.161:9000")
+                .credentials("minioadmin", "minioadmin")
                 .build();
     }
 }

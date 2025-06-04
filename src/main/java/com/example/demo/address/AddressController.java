@@ -2,6 +2,7 @@ package com.example.demo.address;
 
 import com.example.demo.address.model.AddressRequest;
 import com.example.demo.address.model.AddressResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -10,17 +11,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/addresses")
+@RequiredArgsConstructor
 public class AddressController {
 
     private final AddressService addressService;
 
-    public AddressController(AddressService addressService) {
-        this.addressService = addressService;
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<AddressResponse> createAddress(@RequestBody AddressRequest addressRequest) {
+    public ResponseEntity<?> createAddress(@RequestBody AddressRequest addressRequest) {
         return addressService.create(addressRequest);
     }
 

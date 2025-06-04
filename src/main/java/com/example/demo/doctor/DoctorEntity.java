@@ -7,10 +7,8 @@ import com.example.demo.user.Languages;
 import com.example.demo.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.List;
-
 
 @Entity
 @NoArgsConstructor
@@ -49,11 +47,10 @@ public class DoctorEntity {
     @Column(name = "language")
     private List<Languages> languagesSpoken;
 
-
     private String educationalBackground;
 
     @Column(nullable = false)
-    private boolean isVerified = false; // faqat VERIFIED sertifikat bo‘lsa true bo‘ladi
+    private boolean isVerified = false;
 
 
     @ManyToMany(fetch = FetchType.LAZY)

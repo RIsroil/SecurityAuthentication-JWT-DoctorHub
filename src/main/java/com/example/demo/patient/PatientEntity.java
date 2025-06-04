@@ -4,7 +4,6 @@ import com.example.demo.address.AddressEntity;
 import com.example.demo.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Entity

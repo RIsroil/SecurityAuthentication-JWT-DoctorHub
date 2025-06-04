@@ -5,9 +5,7 @@ import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,13 +35,11 @@ public class MinioService {
                 .build();
     }
 
-
     public String getPermanentUrl(String fileName) {
         return "http://217.114.3.161:9000/" + bucketName + "/" + fileName;
     }
 
     public String uploadFile(MultipartFile file) throws Exception {
-        // Fayl kengaytmasini olish (.mp4, .jpg, .png va h.k.)
         String originalFilename = file.getOriginalFilename();
         String extension = "";
 
@@ -51,10 +47,8 @@ public class MinioService {
             extension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
 
-        // UUID asosida unikal fayl nomi yaratish
         String fileName = UUID.randomUUID().toString() + extension;
 
-        // Faylni Minio serveriga yuklash
         try (InputStream inputStream = file.getInputStream()) {
             minioClient.putObject(
                     PutObjectArgs.builder()

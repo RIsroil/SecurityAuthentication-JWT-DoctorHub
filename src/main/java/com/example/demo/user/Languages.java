@@ -16,7 +16,6 @@ public enum Languages {
     KIRGHIZ,
     ARABIC;
 
-
     public static List<String> getAllRoles() {
         return Arrays.stream(Role.values())
                 .map(Enum::name)

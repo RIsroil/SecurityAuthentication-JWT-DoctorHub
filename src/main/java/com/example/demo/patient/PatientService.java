@@ -55,8 +55,5 @@ public class PatientService {
         String refreshToken = jwtService.generateRefreshToken(userEntity);
 
         return new AuthResponse(accessToken, refreshToken);
-
     }
-
-
 }

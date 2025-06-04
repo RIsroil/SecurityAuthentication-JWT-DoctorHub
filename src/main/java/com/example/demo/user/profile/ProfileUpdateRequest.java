@@ -15,12 +15,9 @@ public class ProfileUpdateRequest {
     private String phone;
     private Long addressId;
 
-    // faqat doctor uchun
     private Integer experienceYears;
     private List<Long> specializationIds;
     private Double orderFees;
     private List<Languages> languagesSpoken;
     private String educationalBackground;
-
-
 }

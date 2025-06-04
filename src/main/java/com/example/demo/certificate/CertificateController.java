@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,19 +18,19 @@ public class CertificateController {
     private final CertificateService certificateService;
     private final MinioService minioService;
 
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> uploadCertificate(@RequestParam("file") MultipartFile file) {
             return ResponseEntity.ok(minioService.uploadCertificate(file));
     }
 
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @PostMapping()
     public ResponseEntity<?> addCertificate(@RequestParam String accessToken, @RequestBody CertificateRequest request) {
         return ResponseEntity.ok(certificateService.addCertificate(accessToken, request));
     }
 
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @GetMapping()
     public ResponseEntity<?> getCertificates(@RequestParam String accessToken) {
         return ResponseEntity.ok(certificateService.getMyCertificates(accessToken));
@@ -43,7 +42,6 @@ public class CertificateController {
         return ResponseEntity.ok(certificateService.updateStatus(id, status));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PATIENT')")
     @GetMapping("/{doctorId}")
     public ResponseEntity<?> getDoctorCertificatesById(@PathVariable Long doctorId){
         return ResponseEntity.ok(certificateService.getDoctorAllCertificatesByDoctorId(doctorId));

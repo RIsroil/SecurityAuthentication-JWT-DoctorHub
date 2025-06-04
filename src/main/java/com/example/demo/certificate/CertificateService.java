@@ -1,6 +1,5 @@
 package com.example.demo.certificate;
 
-import com.example.demo.certificate.minio.MinioConfig;
 import com.example.demo.certificate.minio.MinioService;
 import com.example.demo.certificate.model.CertificateRequest;
 import com.example.demo.certificate.model.CertificateResponse;
@@ -8,17 +7,15 @@ import com.example.demo.certificate.role.CertificateStatus;
 import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.doctor.DoctorRepository;
 import com.example.demo.jwt.JwtService;
+import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
-import io.minio.MinioClient;
-import io.minio.RemoveObjectArgs;
+import com.example.demo.user.auth.AuthHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 @Service
@@ -30,18 +27,10 @@ public class CertificateService {
     private final CertificateRepository certificateRepository;
     private final DoctorRepository doctorRepository;
     private final MinioService minioService;
+    private final AuthHelperService authHelperService;
 
     public ResponseEntity<?> addCertificate(String accessToken, CertificateRequest dto) {
-        String username;
-        try {
-            username = jwtService.extractUsername(accessToken);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
-
+        UserEntity user = authHelperService.getUserFromToken(accessToken);;
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
 
         CertificateEntity cert = new CertificateEntity();
@@ -51,7 +40,6 @@ public class CertificateService {
         cert.setDoctor(doctor);
 
         certificateRepository.save(cert);
-
         return ResponseEntity.ok("Certificat muvaffaqiyatli qo'shildi!");
     }
 
@@ -73,18 +61,8 @@ public class CertificateService {
     }
 
     public ResponseEntity<?> getMyCertificates(String accessToken) {
-        String username;
-        try {
-            username = jwtService.extractUsername(accessToken);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
-
+        UserEntity user = authHelperService.getUserFromToken(accessToken);
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
 
         List<CertificateResponse> responses = certEntities.stream()
@@ -117,37 +95,23 @@ public class CertificateService {
     }
 
     public ResponseEntity<?> deleteCertificate(String accessToken, Long id) {
-        String username;
-        try {
-            username = jwtService.extractUsername(accessToken);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
-
+        UserEntity user = authHelperService.getUserFromToken(accessToken);;
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-
         CertificateEntity cert = certificateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));
 
-        if (!cert.getDoctor().getId().equals(doctor.getId())) {
+        if (!cert.getDoctor().getId().equals(doctor.getId()) || user.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("You can not delete this certificate");
         }
 
-        // ✅ MinIO faylini o'chirish
         try {
             minioService.deleteFile(cert.getFileUrl());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("MinIO faylini o'chirishda xatolik: " + ex.getMessage());
         }
-
-        // Fayl bazadan o‘chiriladi
         certificateRepository.delete(cert);
 
-        // Verified count ni qayta hisoblab yangilash
         long verifiedCount = doctor.getCertificates().stream()
                 .filter(c -> !c.getId().equals(id))
                 .filter(c -> c.getStatus() == CertificateStatus.VERIFIED)

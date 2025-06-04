@@ -1,6 +1,5 @@
 package com.example.demo.certificate;
 
-
 import com.example.demo.certificate.role.CertificateStatus;
 import com.example.demo.doctor.DoctorEntity;
 import jakarta.persistence.*;
@@ -16,7 +15,6 @@ public class CertificateEntity {
 
     private static final String GENERATOR_NAME = "certificates_gen";
     private static final String SEQUENCE_NAME = "certificates_seq";
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = GENERATOR_NAME)
