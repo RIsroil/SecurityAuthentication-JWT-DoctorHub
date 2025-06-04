@@ -21,13 +21,8 @@ public class CertificateController {
 
     @PreAuthorize("hasRole('DOCTOR')")
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> uploadVideo(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileUrl = minioService.uploadFile(file);
-            return ResponseEntity.ok().body("{\"videoUrl\": \"" + fileUrl + "\"}");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Faylni yuklashda xatolik: " + e.getMessage());
-        }
+    public ResponseEntity<?> uploadCertificate(@RequestParam("file") MultipartFile file) {
+            return ResponseEntity.ok(minioService.uploadCertificate(file));
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
