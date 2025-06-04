@@ -32,12 +32,6 @@ public class CertificateController {
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
-    @PostMapping(path = "/upload2", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> addCertificate2(@RequestParam String accessToken, @RequestBody CertificateRequest2 request, @RequestParam("file") MultipartFile file) throws Exception {
-        return ResponseEntity.ok(certificateService.addCertificate2(accessToken, request, file));
-    }
-
-    @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping()
     public ResponseEntity<?> getCertificates(@RequestParam String accessToken) {
         return ResponseEntity.ok(certificateService.getMyCertificates(accessToken));
