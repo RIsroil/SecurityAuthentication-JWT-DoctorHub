@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,6 +47,32 @@ public class CertificateService {
         CertificateEntity cert = new CertificateEntity();
         cert.setTitle(dto.getTitle());
         cert.setFileUrl(dto.getFileUrl());
+        cert.setStatus(CertificateStatus.PENDING);
+        cert.setDoctor(doctor);
+
+        certificateRepository.save(cert);
+
+        return ResponseEntity.ok("Certificat muvaffaqiyatli qo'shildi!");
+    }
+
+    public ResponseEntity<?> addCertificate2(String accessToken, CertificateRequest2 dto, MultipartFile file) throws Exception{
+        String username;
+        try {
+            username = jwtService.extractUsername(accessToken);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
+        }
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+
+        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
+
+        String fileUrl = String.valueOf(minioService.uploadFile(file));
+
+        CertificateEntity cert = new CertificateEntity();
+        cert.setTitle(dto.getTitle());
+        cert.setFileUrl(fileUrl);
         cert.setStatus(CertificateStatus.PENDING);
         cert.setDoctor(doctor);
 

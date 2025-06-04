@@ -105,10 +105,10 @@ public class MinioService {
         );
     }
 
-    public ResponseEntity<?> uploadCertificate(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadCertificate(MultipartFile file) {
         try {
             String fileUrl = uploadFile(file);
-            return ResponseEntity.ok().body("{\"certificateUrl\": \"" + fileUrl + "\"}");
+            return ResponseEntity.ok().body(fileUrl);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Faylni yuklashda xatolik: " + e.getMessage());
         }
