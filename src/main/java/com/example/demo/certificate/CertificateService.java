@@ -1,5 +1,7 @@
 package com.example.demo.certificate;
 
+import com.example.demo.certificate.minio.MinioConfig;
+import com.example.demo.certificate.minio.MinioService;
 import com.example.demo.certificate.model.CertificateRequest;
 import com.example.demo.certificate.model.CertificateResponse;
 import com.example.demo.certificate.role.CertificateStatus;
@@ -8,7 +10,10 @@ import com.example.demo.doctor.DoctorRepository;
 import com.example.demo.jwt.JwtService;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -23,6 +28,7 @@ public class CertificateService {
     private final UserRepository userRepository;
     private final CertificateRepository certificateRepository;
     private final DoctorRepository doctorRepository;
+    private final MinioService minioService;
 
     public ResponseEntity<?> addCertificate(String accessToken, CertificateRequest dto) {
         String username;
@@ -116,6 +122,7 @@ public class CertificateService {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Token noto‘g‘ri: " + e.getMessage());
         }
+
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
 
@@ -128,8 +135,18 @@ public class CertificateService {
             throw new AccessDeniedException("You can not delete this certificate");
         }
 
+        // ✅ MinIO faylini o'chirish
+        try {
+            minioService.deleteFile(cert.getFileUrl());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("MinIO faylini o'chirishda xatolik: " + ex.getMessage());
+        }
+
+        // Fayl bazadan o‘chiriladi
         certificateRepository.delete(cert);
 
+        // Verified count ni qayta hisoblab yangilash
         long verifiedCount = doctor.getCertificates().stream()
                 .filter(c -> !c.getId().equals(id))
                 .filter(c -> c.getStatus() == CertificateStatus.VERIFIED)
@@ -140,4 +157,5 @@ public class CertificateService {
 
         return ResponseEntity.ok("Certificate muvaffaqiyatli o'chirildi");
     }
+
 }

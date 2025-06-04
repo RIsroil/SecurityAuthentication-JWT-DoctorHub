@@ -1,7 +1,9 @@
 package com.example.demo.certificate.minio;
 
+import io.minio.MinioClient;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Data
@@ -12,4 +14,13 @@ public class MinioConfig {
     private String accessKey;
     private String secretKey;
     private String bucketName;
+
+
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint("http://217.114.3.161:9000") // MinIO server manzili
+                .credentials("minioadmin", "minioadmin") // login va parol
+                .build();
+    }
 }
