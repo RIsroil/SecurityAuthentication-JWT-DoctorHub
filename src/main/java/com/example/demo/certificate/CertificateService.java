@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class CertificateService {
     private final MinioService minioService;
     private final AuthHelperService authHelperService;
 
-    public ResponseEntity<?> addCertificate(String accessToken, CertificateRequest dto) {
+    public CertificateResponse addCertificate(String accessToken, CertificateRequest dto) {
         UserEntity user = authHelperService.getUserFromToken(accessToken);;
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
 
@@ -38,9 +39,14 @@ public class CertificateService {
         cert.setFileUrl(dto.getFileUrl());
         cert.setStatus(CertificateStatus.PENDING);
         cert.setDoctor(doctor);
-
         certificateRepository.save(cert);
-        return ResponseEntity.ok("Certificat muvaffaqiyatli qo'shildi!");
+
+        return CertificateResponse.builder()
+                .id(cert.getId())
+                .title(cert.getTitle())
+                .fileUrl(cert.getFileUrl())
+                .status(cert.getStatus())
+                .build();
     }
 
     public ResponseEntity<?> updateStatus(Long id, CertificateStatus status) {
@@ -60,12 +66,12 @@ public class CertificateService {
         return ResponseEntity.ok("Status muvaffaqiyatli yangilandi");
     }
 
-    public ResponseEntity<?> getMyCertificates(String accessToken) {
+    public List<CertificateResponse> getMyCertificates(String accessToken) {
         UserEntity user = authHelperService.getUserFromToken(accessToken);
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
 
-        List<CertificateResponse> responses = certEntities.stream()
+        return certEntities.stream()
                 .map(cert -> CertificateResponse.builder()
                         .id(cert.getId())
                         .title(cert.getTitle())
@@ -73,25 +79,21 @@ public class CertificateService {
                         .status(cert.getStatus())
                         .build())
                 .toList();
-
-        return ResponseEntity.ok(responses);
     }
 
-    public ResponseEntity<?> getDoctorAllCertificatesByDoctorId(Long doctorId) {
+    public List<CertificateResponse> getDoctorAllCertificatesByDoctorId(Long doctorId) {
         DoctorEntity doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctorId);
-        List<CertificateResponse> responses = certEntities.stream()
+        return certEntities.stream()
                 .map(cert -> CertificateResponse.builder()
-                        .id(cert.getId())
-                        .title(cert.getTitle())
-                        .fileUrl(cert.getFileUrl())
-                        .status(cert.getStatus())
-                        .build())
+                    .id(cert.getId())
+                    .title(cert.getTitle())
+                    .fileUrl(cert.getFileUrl())
+                    .status(cert.getStatus())
+                    .build())
                 .toList();
-
-        return ResponseEntity.ok(responses);
     }
 
     public ResponseEntity<?> deleteCertificate(String accessToken, Long id) {

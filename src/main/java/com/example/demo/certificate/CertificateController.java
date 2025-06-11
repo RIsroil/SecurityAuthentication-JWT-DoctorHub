@@ -2,6 +2,7 @@ package com.example.demo.certificate;
 
 import com.example.demo.certificate.minio.MinioService;
 import com.example.demo.certificate.model.CertificateRequest;
+import com.example.demo.certificate.model.CertificateResponse;
 import com.example.demo.certificate.role.CertificateStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/certificate")
@@ -26,14 +29,14 @@ public class CertificateController {
 
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @PostMapping()
-    public ResponseEntity<?> addCertificate(@RequestParam String accessToken, @RequestBody CertificateRequest request) {
-        return ResponseEntity.ok(certificateService.addCertificate(accessToken, request));
+    public CertificateResponse addCertificate(@RequestParam String accessToken, @RequestBody CertificateRequest request) {
+        return certificateService.addCertificate(accessToken, request);
     }
 
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @GetMapping()
-    public ResponseEntity<?> getCertificates(@RequestParam String accessToken) {
-        return ResponseEntity.ok(certificateService.getMyCertificates(accessToken));
+    public List<CertificateResponse> getCertificates(@RequestParam String accessToken) {
+        return certificateService.getMyCertificates(accessToken);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -43,8 +46,8 @@ public class CertificateController {
     }
 
     @GetMapping("/{doctorId}")
-    public ResponseEntity<?> getDoctorCertificatesById(@PathVariable Long doctorId){
-        return ResponseEntity.ok(certificateService.getDoctorAllCertificatesByDoctorId(doctorId));
+    public List<CertificateResponse> getDoctorCertificatesById(@PathVariable Long doctorId){
+        return certificateService.getDoctorAllCertificatesByDoctorId(doctorId);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
