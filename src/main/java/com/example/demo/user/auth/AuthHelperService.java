@@ -10,6 +10,8 @@ import com.example.demo.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
+
 @Service
 @RequiredArgsConstructor
 public class AuthHelperService {
@@ -23,6 +25,12 @@ public class AuthHelperService {
         String username = jwtService.extractUsername(accessToken);
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+    }
+
+    public UserEntity getUserFromPrincipal(Principal principal) {
+        String username = principal.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
     }
 
     public DoctorEntity getDoctorFromToken(String accessToken) {

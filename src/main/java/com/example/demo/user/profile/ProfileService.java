@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -34,8 +35,10 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final AuthHelperService authHelperService;
 
-    public UserProfileResponse getProfile(String accessToken) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public UserProfileResponse getProfile(Principal principal) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
 
         Role role = user.getRole();
 
@@ -86,8 +89,10 @@ public class ProfileService {
         throw new RuntimeException("Role noto‘g‘ri: " + role);
     }
 
-    public ResponseEntity<?> updateProfile(String accessToken, ProfileUpdateRequest request) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public ResponseEntity<?> updateProfile(Principal principal, ProfileUpdateRequest request) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
 
         Role role = user.getRole();
 
@@ -145,8 +150,10 @@ public class ProfileService {
         }
     }
 
-    public ResponseEntity<?> changePassword( String accessToken, ChangePasswordRequest request) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public ResponseEntity<?> changePassword( Principal principal, ChangePasswordRequest request) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Eski parol noto‘g‘ri");

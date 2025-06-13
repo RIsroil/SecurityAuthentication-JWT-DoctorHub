@@ -6,13 +6,13 @@ import lombok.Data;
 @Data
 public class BranchRequest {
 
+    @NotBlank
     private String branchName;
-
+    @NotBlank
     private String branchRegion;
-
+    @NotBlank
     private String branchCity;
-
-    @NotBlank(message = "Link https://www.google.com/maps dan olingan bo'lishligi kerak!!!")
+    @NotBlank
     private String branchLocationLink;
 
 }
