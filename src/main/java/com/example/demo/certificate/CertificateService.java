@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,8 +32,11 @@ public class CertificateService {
     private final MinioService minioService;
     private final AuthHelperService authHelperService;
 
-    public CertificateResponse addCertificate(String accessToken, CertificateRequest dto) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);;
+    public CertificateResponse addCertificate(Principal principal, CertificateRequest dto) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
 
         CertificateEntity cert = new CertificateEntity();
@@ -66,8 +71,11 @@ public class CertificateService {
         return ResponseEntity.ok("Status muvaffaqiyatli yangilandi");
     }
 
-    public List<CertificateResponse> getMyCertificates(String accessToken) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public List<CertificateResponse> getMyCertificates(Principal principal) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
 
@@ -96,8 +104,11 @@ public class CertificateService {
                 .toList();
     }
 
-    public ResponseEntity<?> deleteCertificate(String accessToken, Long id) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);;
+    public ResponseEntity<?> deleteCertificate(Principal principal, Long id) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         CertificateEntity cert = certificateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));

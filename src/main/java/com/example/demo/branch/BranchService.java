@@ -12,7 +12,11 @@ import com.example.demo.user.UserRepository;
 import com.example.demo.user.auth.AuthHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,37 +31,42 @@ public class BranchService {
     private final BranchRepository branchRepository;
     private final AuthHelperService authHelperService;
 
-    public ResponseEntity<?> createBranch(String accessToken, BranchRequest request) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public ResponseEntity<?> createBranch(Principal principal, BranchRequest request) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
+        if (doctor == null) throw new RuntimeException("Doctor topilmadi");
 
         BranchEntity branch = new BranchEntity();
-        if (request.getBranchName()!=null) {branch.setBranchName(request.getBranchName());}
-            else {return ResponseEntity.badRequest().body("Branch name can not be empty");}
-
-        if (request.getBranchCity()!=null) {branch.setBranchCity(request.getBranchCity());}
-            else {return ResponseEntity.badRequest().body("Branch city can not be empty");}
-
-        if (request.getBranchRegion()!=null) {branch.setBranchRegion(request.getBranchRegion());}
-            else {ResponseEntity.badRequest().body("Branch region can not be empty");}
+        branch.setBranchName(request.getBranchName());
+        branch.setBranchCity(request.getBranchCity());
+        branch.setBranchRegion(request.getBranchRegion());
         branch.setDoctorEntity(doctor);
-
-        if (!request.getBranchLocationLink().startsWith("https://www.google.com/maps")) return ResponseEntity.badRequest().body("Location link must be a Google Maps link");
+        if (!request.getBranchLocationLink().startsWith("https://www.google.com/maps")) {
+            return ResponseEntity.badRequest().body("Location link noto‘g‘ri formatda");
+        }
         try {
             double[] coords = geocodingService.getCoordinatesFromAddress(request.getBranchLocationLink());
             branch.setLatitude(coords[0]);
             branch.setLongitude(coords[1]);
             branch.setBranchLocationLink(request.getBranchLocationLink());
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body("Invalid Google Maps location link");
+            return ResponseEntity.badRequest().body("Location linkdan koordinata olinmadi");
         }
         branchRepository.save(branch);
         return mapToResponse(branch);
     }
 
-    public List<BranchResponse> getMyBranches(String accessToken) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);
+    public List<BranchResponse> getMyBranches(Principal principal) {
+        String username = principal.getName();
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
+        if (doctor == null) throw new RuntimeException("Doctor topilmadi");
 
         List<BranchEntity> branches = branchRepository.findAllByDoctorEntityId(doctor.getId());
 
@@ -73,23 +82,30 @@ public class BranchService {
                         .doctorId(branch.getDoctorEntity().getId())
                         .atDate(branch.getAtDate())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public ResponseEntity<?> deleteBranch(String accessToken, Long id) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);;
+    public ResponseEntity<?> deleteBranch(Principal principal, Long id) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
         if (!branch.getId().equals(doctor.getId())) {
             throw new RuntimeException("You can not delete this branch");
         }
+
         branchRepository.delete(branch);
         return ResponseEntity.ok("Branch muvaffaqiyatli o'chirildi");
     }
 
-    public ResponseEntity<?> updateBranch(String accessToken, Long id, BranchUpdateRequest request) {
-        UserEntity user = authHelperService.getUserFromToken(accessToken);;
+    public ResponseEntity<?> updateBranch(Principal principal, Long id, BranchUpdateRequest request) {
+        String username = principal.getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));

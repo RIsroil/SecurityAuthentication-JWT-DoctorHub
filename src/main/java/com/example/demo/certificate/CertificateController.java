@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -29,14 +30,14 @@ public class CertificateController {
 
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @PostMapping()
-    public CertificateResponse addCertificate(@RequestParam String accessToken, @RequestBody CertificateRequest request) {
-        return certificateService.addCertificate(accessToken, request);
+    public CertificateResponse addCertificate(Principal principal, @RequestBody CertificateRequest request) {
+        return certificateService.addCertificate(principal, request);
     }
 
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @GetMapping()
-    public List<CertificateResponse> getCertificates(@RequestParam String accessToken) {
-        return certificateService.getMyCertificates(accessToken);
+    public List<CertificateResponse> getCertificates(Principal principal) {
+        return certificateService.getMyCertificates(principal);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -52,7 +53,7 @@ public class CertificateController {
 
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCertificate(@RequestParam String accessToken, @PathVariable Long id){
-        return ResponseEntity.ok(certificateService.deleteCertificate(accessToken, id));
+    public ResponseEntity<?> deleteCertificate(Principal principal, @PathVariable Long id){
+        return ResponseEntity.ok(certificateService.deleteCertificate(principal, id));
     }
 }
