@@ -2,6 +2,9 @@ package com.example.demo.doctor;
 
 import com.example.demo.address.AddressEntity;
 import com.example.demo.address.AddressRepository;
+import com.example.demo.exception.DuplicateResourceException;
+import com.example.demo.exception.InvalidInputException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.jwt.JwtService;
 import com.example.demo.specialization.SpecializationEntity;
 import com.example.demo.specialization.SpecializationRepository;
@@ -29,11 +32,11 @@ public class DoctorService {
     @Transactional
     public AuthResponse register(DoctorRegisterRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Bu username allaqachon mavjud");
+            throw new DuplicateResourceException("Username '" + request.getUsername() + "' already exists.");
         }
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Bu email allaqachon mavjud");
+            throw new DuplicateResourceException("Email '" + request.getEmail() + "' already exists.");
         }
 
         UserEntity userEntity = new UserEntity();
@@ -44,11 +47,11 @@ public class DoctorService {
         userRepository.save(userEntity);
 
         AddressEntity address = addressRepository.findById(request.getAddressId())
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with ID: " + request.getAddressId()));
 
         List<SpecializationEntity> specializations = specializationRepository.findAllById(request.getSpecializations());
         if (specializations.isEmpty()) {
-            throw new RuntimeException("At least one specialization must be selected");
+            throw new InvalidInputException("At least one specialization must be selected for a doctor.");
         }
 
         DoctorEntity doctorEntity = new DoctorEntity();
