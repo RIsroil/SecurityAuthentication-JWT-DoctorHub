@@ -32,10 +32,7 @@ public class BranchService {
     private final AuthHelperService authHelperService;
 
     public ResponseEntity<?> createBranch(Principal principal, BranchRequest request) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
-
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         if (doctor == null) throw new RuntimeException("Doctor topilmadi");
 
@@ -60,10 +57,7 @@ public class BranchService {
     }
 
     public List<BranchResponse> getMyBranches(Principal principal) {
-        String username = principal.getName();
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         if (doctor == null) throw new RuntimeException("Doctor topilmadi");
@@ -86,9 +80,7 @@ public class BranchService {
     }
 
     public ResponseEntity<?> deleteBranch(Principal principal, Long id) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(id)
@@ -102,9 +94,7 @@ public class BranchService {
     }
 
     public ResponseEntity<?> updateBranch(Principal principal, Long id, BranchUpdateRequest request) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(id)

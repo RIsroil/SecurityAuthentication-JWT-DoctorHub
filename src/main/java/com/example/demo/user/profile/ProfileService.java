@@ -36,9 +36,7 @@ public class ProfileService {
     private final AuthHelperService authHelperService;
 
     public UserProfileResponse getProfile(Principal principal) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         Role role = user.getRole();
 
@@ -90,9 +88,7 @@ public class ProfileService {
     }
 
     public ResponseEntity<?> updateProfile(Principal principal, ProfileUpdateRequest request) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         Role role = user.getRole();
 
@@ -151,9 +147,7 @@ public class ProfileService {
     }
 
     public ResponseEntity<?> changePassword( Principal principal, ChangePasswordRequest request) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Eski parol noto‘g‘ri");

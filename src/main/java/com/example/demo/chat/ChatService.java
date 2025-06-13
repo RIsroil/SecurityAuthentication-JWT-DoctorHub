@@ -8,6 +8,7 @@ import com.example.demo.patient.PatientEntity;
 import com.example.demo.patient.PatientRepository;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.auth.AuthHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,10 @@ public class ChatService {
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
+    private final AuthHelperService authHelperService;
 
     public void createOrGetChat(Principal principal, Long doctorId) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         PatientEntity patient = patientRepository.findByUser_Id(user.getId());
 
@@ -45,9 +45,7 @@ public class ChatService {
     }
 
     public List<ChatResponse> getChatsByUser(Principal principal) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         if (user.getRole().name().equals("DOCTOR")) {
             DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId()) ;
@@ -69,9 +67,7 @@ public class ChatService {
     }
 
     public void deleteChat(Principal principal, Long chatId) {
-        String username = principal.getName();
-        UserEntity currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat topilmadi"));
@@ -79,7 +75,7 @@ public class ChatService {
         Long doctorUserId = chat.getDoctor().getUser().getId();
         Long patientUserId = chat.getPatient().getUser().getId();
 
-        boolean isOwner = currentUser.getId().equals(doctorUserId) || currentUser.getId().equals(patientUserId);
+        boolean isOwner = user.getId().equals(doctorUserId) || user.getId().equals(patientUserId);
 
         if (!isOwner) {
             throw new RuntimeException("Siz bu chatni o‘chirishga ruxsatingiz yo‘q");
@@ -89,9 +85,7 @@ public class ChatService {
     }
 
     public List<MessageResponse> getMessagesByChatId(Principal principal, Long chatId) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat topilmadi"));

@@ -33,9 +33,7 @@ public class CertificateService {
     private final AuthHelperService authHelperService;
 
     public CertificateResponse addCertificate(Principal principal, CertificateRequest dto) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
 
@@ -72,9 +70,7 @@ public class CertificateService {
     }
 
     public List<CertificateResponse> getMyCertificates(Principal principal) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
@@ -105,9 +101,7 @@ public class CertificateService {
     }
 
     public ResponseEntity<?> deleteCertificate(Principal principal, Long id) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         CertificateEntity cert = certificateRepository.findById(id)

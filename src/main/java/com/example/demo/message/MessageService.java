@@ -6,6 +6,7 @@ import com.example.demo.message.model.MessageRequest;
 import com.example.demo.message.model.MessageResponse;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
+import com.example.demo.user.auth.AuthHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
@@ -17,11 +18,10 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
+    private final AuthHelperService authHelperService;
 
     public MessageResponse sendMessage(Principal principal, Long chatId, MessageRequest content, boolean isSystemGenerated) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
@@ -43,9 +43,7 @@ public class MessageService {
     }
 
     public void updateMessage(Principal principal, Long messageId, MessageRequest newContent) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         MessageEntity message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
@@ -63,9 +61,7 @@ public class MessageService {
     }
 
     public void deleteMessage(Principal principal, Long messageId) {
-        String username = principal.getName();
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User topilmadi"));
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         MessageEntity message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
