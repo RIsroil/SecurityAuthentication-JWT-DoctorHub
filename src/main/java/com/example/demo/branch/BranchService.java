@@ -4,6 +4,9 @@ import com.example.demo.address.location.GeocodingService;
 import com.example.demo.branch.model.BranchRequest;
 import com.example.demo.branch.model.BranchResponse;
 import com.example.demo.branch.model.BranchUpdateRequest;
+import com.example.demo.disease.DiseaseEntity;
+import com.example.demo.disease.DiseaseRepository;
+import com.example.demo.disease.model.DiseaseResponse;
 import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.doctor.DoctorRepository;
 import com.example.demo.jwt.JwtService;
@@ -30,6 +33,7 @@ public class BranchService {
     private final JwtService jwtService;
     private final BranchRepository branchRepository;
     private final AuthHelperService authHelperService;
+    private final DiseaseRepository diseaseRepository;
 
     public ResponseEntity<?> createBranch(Principal principal, BranchRequest request) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
@@ -65,17 +69,28 @@ public class BranchService {
         List<BranchEntity> branches = branchRepository.findAllByDoctorEntityId(doctor.getId());
 
         return branches.stream()
-                .map(branch -> BranchResponse.builder()
-                        .branchId(branch.getId())
-                        .branchName(branch.getBranchName())
-                        .branchCity(branch.getBranchCity())
-                        .branchRegion(branch.getBranchRegion())
-                        .branchLocationLink(branch.getBranchLocationLink())
-                        .branchImageUrl(branch.getBranchImageUrl())
-                        .branchDescription(branch.getBranchDescription())
-                        .doctorId(branch.getDoctorEntity().getId())
-                        .atDate(branch.getAtDate())
-                        .build())
+                .map(branch -> {
+                    List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+                            .map(disease -> DiseaseResponse.builder()
+                                    .id(disease.getId())
+                                    .diseaseName(disease.getDiseaseName())
+                                    .price(disease.getPrice())
+                                    .build())
+                            .toList();
+
+                    return BranchResponse.builder()
+                            .branchId(branch.getId())
+                            .branchName(branch.getBranchName())
+                            .branchCity(branch.getBranchCity())
+                            .branchRegion(branch.getBranchRegion())
+                            .branchLocationLink(branch.getBranchLocationLink())
+                            .branchImageUrl(branch.getBranchImageUrl())
+                            .branchDescription(branch.getBranchDescription())
+                            .doctorId(branch.getDoctorEntity().getId())
+                            .atDate(branch.getAtDate())
+                            .diseases(diseaseResponses)
+                            .build();
+                })
                 .toList();
     }
 
@@ -132,6 +147,13 @@ public class BranchService {
     public BranchResponse getBranchById(Long id) {
         BranchEntity branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
+        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+                .map(disease -> DiseaseResponse.builder()
+                        .id(disease.getId())
+                        .diseaseName(disease.getDiseaseName())
+                        .price(disease.getPrice())
+                        .build())
+                .toList();
 
         return BranchResponse.builder()
                 .branchId(branch.getId())
@@ -143,10 +165,19 @@ public class BranchService {
                 .branchDescription(branch.getBranchDescription())
                 .atDate(branch.getAtDate())
                 .doctorId(branch.getDoctorEntity().getId())
+                .diseases(diseaseResponses)
                 .build();
     }
 
     private ResponseEntity<BranchResponse> mapToResponse(BranchEntity branch){
+        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+                .map(disease -> DiseaseResponse.builder()
+                        .id(disease.getId())
+                        .diseaseName(disease.getDiseaseName())
+                        .price(disease.getPrice())
+                        .build())
+                .toList();
+
         return ResponseEntity.ok(BranchResponse.builder()
                 .branchId(branch.getId())
                 .branchName(branch.getBranchName())
@@ -157,6 +188,7 @@ public class BranchService {
                 .branchDescription(branch.getBranchDescription())
                 .atDate(branch.getAtDate())
                 .doctorId(branch.getDoctorEntity().getId())
+                .diseases(diseaseResponses)
                 .build());
     }
 }

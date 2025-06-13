@@ -1,5 +1,6 @@
 package com.example.demo.branch;
 
+import com.example.demo.disease.DiseaseEntity;
 import com.example.demo.doctor.DoctorEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -44,5 +46,8 @@ public class BranchEntity {
     @JoinColumn(name = "doctor_id")
     @JsonIgnore
     private DoctorEntity doctorEntity;
+
+    @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiseaseEntity> diseases;
 
 }
