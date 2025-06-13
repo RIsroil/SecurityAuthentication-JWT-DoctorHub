@@ -25,15 +25,14 @@ public class ChatService {
     private final PatientRepository patientRepository;
     private final AuthHelperService authHelperService;
 
-    public void createOrGetChat(Principal principal, Long doctorId) {
+    public ChatEntity createOrGetChat(Principal principal, Long doctorId) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
         PatientEntity patient = patientRepository.findByUser_Id(user.getId());
 
         DoctorEntity doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        chatRepository.findByDoctor_IdAndPatient_Id(doctor.getId(), patient.getId())
+        return chatRepository.findByDoctor_IdAndPatient_Id(doctor.getId(), patient.getId())
                 .orElseGet(() -> {
                     ChatEntity newChat = ChatEntity.builder()
                             .doctor(doctor)
@@ -43,6 +42,7 @@ public class ChatService {
                     return chatRepository.save(newChat);
                 });
     }
+
 
     public List<ChatResponse> getChatsByUser(Principal principal) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);

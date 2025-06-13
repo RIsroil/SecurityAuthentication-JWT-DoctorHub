@@ -1,8 +1,10 @@
 package com.example.demo.branch.model;
 
+import com.example.demo.disease.model.DiseaseResponse;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -16,4 +18,5 @@ public class BranchResponse {
     private String branchDescription;
     private Long doctorId;
     private LocalDate atDate;
+    private List<DiseaseResponse> diseases;
 }
