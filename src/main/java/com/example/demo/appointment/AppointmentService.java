@@ -85,7 +85,6 @@ public class AppointmentService {
 
     public List<AppointmentResponse> getMyAppointments(Principal principal) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
         if (user.getRole().name().equals("DOCTOR")) {
             DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
             return appointmentRepository.findAllByDoctor_Id(doctor.getId())

@@ -3,6 +3,7 @@ package com.example.demo.chat;
 import com.example.demo.chat.model.ChatResponse;
 import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.doctor.DoctorRepository;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.message.model.MessageResponse;
 import com.example.demo.patient.PatientEntity;
 import com.example.demo.patient.PatientRepository;
@@ -21,7 +22,6 @@ import java.util.List;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final DoctorRepository doctorRepository;
-    private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final AuthHelperService authHelperService;
 
@@ -70,7 +70,8 @@ public class ChatService {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
         ChatEntity chat = chatRepository.findById(chatId)
-                .orElseThrow(() -> new RuntimeException("Chat topilmadi"));
+                .orElseThrow(() -> new ResourceNotFoundException("Chat not found with ID: " + chatId));
+
 
         Long doctorUserId = chat.getDoctor().getUser().getId();
         Long patientUserId = chat.getPatient().getUser().getId();

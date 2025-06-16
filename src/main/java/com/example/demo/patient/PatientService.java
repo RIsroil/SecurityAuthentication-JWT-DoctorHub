@@ -2,6 +2,8 @@ package com.example.demo.patient;
 
 import com.example.demo.address.AddressEntity;
 import com.example.demo.address.AddressRepository;
+import com.example.demo.exception.DuplicateResourceException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.jwt.JwtService;
 import com.example.demo.user.Role;
 import com.example.demo.user.UserEntity;
@@ -24,11 +26,11 @@ public class PatientService {
     @Transactional
     public AuthResponse register(PatientRegisterRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Bu username allaqachon mavjud");
+            throw new DuplicateResourceException("Username '" + request.getUsername() + "' already exists.");
         }
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Bu email allaqachon mavjud");
+            throw new DuplicateResourceException("Email '" + request.getEmail() + "' already exists.");
         }
 
         UserEntity userEntity = new UserEntity();
@@ -39,7 +41,7 @@ public class PatientService {
         userRepository.save(userEntity);
 
         AddressEntity address = addressRepository.findById(request.getAddressId())
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found with ID: " + request.getAddressId()));
 
         PatientEntity patientEntity = new PatientEntity();
         patientEntity.setFirstname(request.getFirstname());
