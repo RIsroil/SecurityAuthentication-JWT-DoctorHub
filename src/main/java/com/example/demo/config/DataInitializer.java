@@ -24,10 +24,12 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String adminEmail = "aaa";
         String adminPassword = "aaa";
+        String username = "aaa";
 
         if (userRepository.findByEmail(adminEmail).isEmpty()) {
             UserEntity admin = new UserEntity();
             admin.setEmail(adminEmail);
+            admin.setUsername(username);
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);

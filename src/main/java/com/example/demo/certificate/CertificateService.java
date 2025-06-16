@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,12 +43,7 @@ public class CertificateService {
         cert.setDoctor(doctor);
         certificateRepository.save(cert);
 
-        return CertificateResponse.builder()
-                .id(cert.getId())
-                .title(cert.getTitle())
-                .fileUrl(cert.getFileUrl())
-                .status(cert.getStatus())
-                .build();
+        return mapToResponse(cert);
     }
 
     public ResponseEntity<?> updateStatus(Long id, CertificateStatus status) {
@@ -76,12 +70,7 @@ public class CertificateService {
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
 
         return certEntities.stream()
-                .map(cert -> CertificateResponse.builder()
-                        .id(cert.getId())
-                        .title(cert.getTitle())
-                        .fileUrl(cert.getFileUrl())
-                        .status(cert.getStatus())
-                        .build())
+                .map(this::mapToResponse)
                 .toList();
     }
 
@@ -91,12 +80,7 @@ public class CertificateService {
 
         List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctorId);
         return certEntities.stream()
-                .map(cert -> CertificateResponse.builder()
-                    .id(cert.getId())
-                    .title(cert.getTitle())
-                    .fileUrl(cert.getFileUrl())
-                    .status(cert.getStatus())
-                    .build())
+                .map(this::mapToResponse)
                 .toList();
     }
 
@@ -130,4 +114,19 @@ public class CertificateService {
         return ResponseEntity.ok("Certificate muvaffaqiyatli o'chirildi");
     }
 
+    public List<CertificateResponse> getCertificatesByStatus(CertificateStatus status){
+        return certificateRepository.findAllCertificatesByStatus(status).stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private CertificateResponse mapToResponse(CertificateEntity entity){
+        return CertificateResponse.builder()
+                .id(entity.getId())
+                .doctorId(entity.getDoctor().getId())
+                .title(entity.getTitle())
+                .fileUrl(entity.getFileUrl())
+                .status(entity.getStatus())
+                .build();
+    }
 }

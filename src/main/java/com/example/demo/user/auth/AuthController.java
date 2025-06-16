@@ -6,6 +6,7 @@ import com.example.demo.user.UserRepository;
 import com.example.demo.user.auth.dto.ForgotPasswordRequest;
 import com.example.demo.user.auth.dto.ResetLinkResponse;
 import com.example.demo.user.auth.dto.ResetPasswordRequest;
+import com.example.demo.user.auth.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,46 +35,11 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        Optional<UserEntity> userOptional = userRepository.findByEmail(request.getEmail());
-
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Email ro'yxatdan o'tmagan");
-        }
-
-        UserEntity user = userOptional.get();
-        String resetToken = jwtService.generateSimpleToken(user); // Oddiy JWT token
-
-        String resetLink = "http://localhost:4200/reset-password?token=" + resetToken;
-
-        ResetLinkResponse link = new ResetLinkResponse();
-        link.setMessage(resetLink);
-        // String resetLink = "https://yourdomain.com/reset-password?token=" + resetToken;
-
-        // TODO: Email yuborish logikasi shu yerda bo‘ladi (hozircha consolga chiqaramiz)
-        System.out.println("Parolni tiklash linki: " + resetLink);
-
-        return ResponseEntity.ok(link);
+        return authService.forgotPassword(request);
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestBody ResetPasswordRequest request) {
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token noto‘g‘ri yoki eskirgan");
-        }
-
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Foydalanuvchi topilmadi"));
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Parollar mos emas");
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Parol muvaffaqiyatli o‘zgartirildi");
+        return authService.resetPassword(token, request);
     }
 }

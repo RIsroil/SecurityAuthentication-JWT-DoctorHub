@@ -8,6 +8,7 @@ import lombok.Data;
 @Builder
 public class CertificateResponse {
     private Long id;
+    private Long doctorId;
     private String title;
     private String fileUrl;
     private CertificateStatus status;

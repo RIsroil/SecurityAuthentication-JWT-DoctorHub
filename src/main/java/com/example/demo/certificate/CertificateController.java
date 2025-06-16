@@ -56,4 +56,10 @@ public class CertificateController {
     public ResponseEntity<?> deleteCertificate(Principal principal, @PathVariable Long id){
         return ResponseEntity.ok(certificateService.deleteCertificate(principal, id));
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/status")
+    public List<CertificateResponse> getCertificatesByStatus(CertificateStatus status){
+        return certificateService.getCertificatesByStatus(status);
+    }
 }
