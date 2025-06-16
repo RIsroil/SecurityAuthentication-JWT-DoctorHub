@@ -11,7 +11,6 @@ public class SpecializationController {
 
     private final SpecializationService specializationService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     private void createSpecialization(@RequestBody RequestSpecialization requestSpecialization) {
         specializationService.create(requestSpecialization);
@@ -27,13 +26,11 @@ public class SpecializationController {
         return specializationService.getById(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     private void deleteSpecialization(@PathVariable Long id) {
         specializationService.delete(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     private void updateSpecialization(@PathVariable Long id, RequestSpecialization requestSpecialization) {
         specializationService.update(id, requestSpecialization);

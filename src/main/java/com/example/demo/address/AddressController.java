@@ -16,13 +16,11 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createAddress(@RequestBody AddressRequest addressRequest) {
         return addressService.create(addressRequest);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<AddressResponse> updateAddress(@PathVariable Long id, @RequestBody AddressRequest addressRequest) {
         return addressService.update(id, addressRequest);
@@ -34,7 +32,6 @@ public class AddressController {
     }
 
     // Addressni o'chirish
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteAddress(@PathVariable Long id) {
         addressService.deleteAddress(id);

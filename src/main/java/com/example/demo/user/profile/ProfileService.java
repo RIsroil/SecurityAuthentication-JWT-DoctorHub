@@ -84,6 +84,14 @@ public class ProfileService {
                     .role(Role.PATIENT.name())
                     .build();
         }
+
+        if (role.equals(Role.ADMIN)) {
+            return UserProfileResponse.builder()
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .role(Role.ADMIN.name())
+                    .build();
+        }
         throw new RuntimeException("Role noto‘g‘ri: " + role);
     }
 
