@@ -1,8 +1,16 @@
 package com.example.demo.certificate.minio;
 
-import io.minio.*;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.ListObjectsArgs;
+import io.minio.Result;
+import io.minio.errors.MinioException;
 import io.minio.messages.Item;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,29 +25,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MinioService {
 
     private final MinioClient minioClient;
+    private final MinioConfig minioConfig;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
 
-    public MinioService(
-            @Value("${minio.endpoint}") String endpoint,
-            @Value("${minio.access-key}") String accessKey,
-            @Value("${minio.secret-key}") String secretKey) {
-        this.minioClient = MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
-    }
-
     public String getPermanentUrl(String fileName) {
-        return "http://217.114.3.161:9000/" + bucketName + "/" + fileName;
+        String endpoint = minioConfig.getEndpoint();
+        if (endpoint.endsWith("/")) {
+            endpoint = endpoint.substring(0, endpoint.length() - 1);
+        }
+        return endpoint + "/" + bucketName + "/" + fileName;
     }
 
-    public String uploadFile(MultipartFile file) throws Exception {
+    public String uploadFile(MultipartFile file) throws MinioException, IOException {
         String originalFilename = file.getOriginalFilename();
         String extension = "";
 
@@ -60,11 +65,31 @@ public class MinioService {
             );
         }
 
+        // REVIEW: The following line saves a copy of the file to the local filesystem.
+        // See the comment on the saveFileLocally method itself for implications and
+        // whether this is strictly necessary when using MinIO.
         saveFileLocally(file, fileName); // Shu fayl nomi bilan lokalga ham saqlanadi
 
         return getPermanentUrl(fileName);
     }
 
+    /**
+     * Saves a copy of the uploaded file to the local filesystem.
+     * NOTE: This behavior is unusual when using an object storage service like MinIO,
+     * as MinIO is itself a persistent storage solution.
+     * Consider the following:
+     * - Is this local save strictly necessary for the application's workflow?
+     * - This creates a dependency on the local filesystem, which can be problematic for scalability (e.g., if running multiple instances of the application).
+     * - Ensure the directory (/home/raximo3b/public_html/certificate_files/) has adequate permissions and disk space.
+     * - If this is for backup or an alternative serving mechanism, ensure this is documented and understood.
+     * - If MinIO is the primary reliable store, this local copy might be redundant and could be removed
+     *   to simplify the system and reduce local storage dependencies.
+     * Please review if this local saving is essential.
+     *
+     * @param file the multipart file to save
+     * @param fileName the name to save the file as
+     * @throws IOException if an I/O error occurs
+     */
     private void saveFileLocally(MultipartFile file, String fileName) throws IOException {
         String localPath = "/home/raximo3b/public_html/certificate_files/" + fileName;
 
@@ -103,8 +128,17 @@ public class MinioService {
         try {
             String fileUrl = uploadFile(file);
             return ResponseEntity.ok().body(fileUrl);
+        } catch (MinioException e) {
+            // Log the exception for server-side details
+            log.error("MinIO error during file upload: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during file upload to storage: " + e.getMessage());
+        } catch (IOException e) {
+            log.error("IO error during file upload: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing file: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Faylni yuklashda xatolik: " + e.getMessage());
+            // Fallback for any other unexpected exception from uploadFile, though ideally it should only declare specific ones.
+            log.error("Unexpected error during file upload: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred during file upload.");
         }
     }
 }
