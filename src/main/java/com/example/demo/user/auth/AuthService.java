@@ -1,7 +1,5 @@
 package com.example.demo.user.auth;
 
-import com.example.demo.exception.InvalidTokenException;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.jwt.JwtService;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
@@ -26,7 +24,7 @@ public class AuthService {
         );
 
         UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + request.getUsername()));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -37,10 +35,10 @@ public class AuthService {
     public AuthResponse refreshToken(String refreshToken) {
         String username = jwtService.extractUsername(refreshToken);
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!jwtService.isTokenValid(refreshToken, user)) {
-            throw new InvalidTokenException("Invalid or expired refresh token");
+            throw new RuntimeException("Invalid refresh token");
         }
 
         String newAccessToken = jwtService.generateAccessToken(user);
