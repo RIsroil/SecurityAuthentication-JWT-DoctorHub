@@ -1,77 +1,75 @@
 version: '3.8'
 
 services:
-  app:
+  doctorhub-app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: doctors-backend2:latest
-    container_name: doctors-backend2
+    container_name: doctorhub-app
+    image: doctorhub-backend:latest
     restart: always
     ports:
-      - "9090:9091"
+      - "9191:9091"  # Spring Boot → host:container
     environment:
-      - POSTGRES_DB=doctors_backend2
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - SPRING_PROFILES_ACTIVE=production
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://doctors-db2:5432/doctors_backend2
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO= update
-      - JAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
-      - MINIO_URL=http://minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      SPRING_DATASOURCE_URL: jdbc:postgresql://doctorhub-db:5432/doctorhub
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_PROFILES_ACTIVE: production
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      MINIO_ENDPOINT: http://localhost:9100
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKETNAME: certificate
+      JAVA_TOOL_OPTIONS: -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
     depends_on:
-      - doctors-db2
+      - doctorhub-db
       - minio
-    networks:
-      - secure-network
     volumes:
       - ./logs:/app/logs
+    networks:
+      - doctorhub-network
     security_opt:
       - no-new-privileges:true
 
-  doctors-db2:
+  doctorhub-db:
     image: postgres:16-alpine
-    container_name: doctors-db2
-    ports:
-      - "5435:5432"  # local:container port
-    environment:
-      - POSTGRES_DB=doctors_backend2
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - doctors_data:/var/lib/postgresql/data
+    container_name: doctorhub-db
     restart: always
+    ports:
+      - "5543:5432"  # DB port → host:container
+    environment:
+      POSTGRES_DB: doctorhub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - doctorhub_data:/var/lib/postgresql/data
     networks:
-      - secure-network
+      - doctorhub-network
     security_opt:
       - no-new-privileges:true
 
   minio:
     image: minio/minio:latest
     container_name: minio
-    ports:
-      - "9000:9000"  # MinIO server
-      - "9001:9001"  # MinIO Console (UI)
-    environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin
+    restart: always
     command: server --console-address ":9001" /data
+    ports:
+      - "9100:9000"  # MinIO API
+      - "9101:9001"  # MinIO Console (UI)
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_data:/data
     networks:
-      - secure-network
-    restart: always
+      - doctorhub-network
     security_opt:
       - no-new-privileges:true
 
 volumes:
-  doctors_data:
+  doctorhub_data:
   minio_data:
 
 networks:
-  secure-network:
+  doctorhub-network:
     driver: bridge
