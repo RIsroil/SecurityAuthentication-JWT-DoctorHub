@@ -16,7 +16,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_PROFILES_ACTIVE: production
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      MINIO_ENDPOINT: http://minio:9100
+      MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKETNAME: certificate
