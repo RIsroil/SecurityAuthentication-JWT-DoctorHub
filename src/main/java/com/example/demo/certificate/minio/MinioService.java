@@ -39,13 +39,12 @@ public class MinioService {
     private String bucketName;
 
     public String getPermanentUrl(String fileName) {
-        String endpoint = minioConfig.getEndpoint();
+        String endpoint = minioConfig.getPublicEndpoint();
         if (endpoint.endsWith("/")) {
             endpoint = endpoint.substring(0, endpoint.length() - 1);
         }
         return endpoint + "/" + bucketName + "/" + fileName;
     }
-
     public String uploadFile(MultipartFile file) throws MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
         String originalFilename = file.getOriginalFilename();
         String extension = "";

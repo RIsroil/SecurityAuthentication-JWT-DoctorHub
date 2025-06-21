@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "minio")
 public class MinioConfig {
-    private String endpoint;
+    private String internalEndpoint;
+    private String publicEndpoint;
     private String accessKey;
     private String secretKey;
     private String bucketName;
@@ -18,8 +19,8 @@ public class MinioConfig {
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint(endpoint) // → application.properties dan olinadi
-                .credentials(accessKey, secretKey) // → environment yoki property
+                .endpoint(internalEndpoint)
+                .credentials(accessKey, secretKey)
                 .build();
     }
 }
