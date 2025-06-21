@@ -18,8 +18,8 @@ public class MinioConfig {
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint("http://217.114.3.161:9000")
-                .credentials("minioadmin", "minioadmin")
+                .endpoint(endpoint) // → application.properties dan olinadi
+                .credentials(accessKey, secretKey) // → environment yoki property
                 .build();
     }
 }
