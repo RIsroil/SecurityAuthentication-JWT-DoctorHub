@@ -1,5 +1,6 @@
 package com.example.demo.chat;
 
+import com.example.demo.appointment.AppointmentEntity;
 import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.message.MessageEntity;
 import com.example.demo.patient.PatientEntity;

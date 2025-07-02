@@ -1,10 +1,12 @@
 package com.example.demo.branch.model;
 
+import com.example.demo.branch.DayOfWeek;
 import com.example.demo.disease.model.DiseaseResponse;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -17,6 +19,6 @@ public class BranchResponse {
     private String branchImageUrl;
     private String branchDescription;
     private Long doctorId;
-    private LocalDate atDate;
-    private List<DiseaseResponse> diseases;
+    private List<DayOfWeek> availableDays;
+    //    private List<DiseaseResponse> diseases;
 }

@@ -12,6 +12,7 @@ import java.time.LocalTime;
 @Setter
 @Builder
 public class AppointmentResponse {
+    private Long chatId;
     private Long id;
     private Long doctorId;
     private String doctorName;
@@ -24,5 +25,6 @@ public class AppointmentResponse {
     private LocalDate date;
     private LocalTime time;
     private String customReason;
+    private String price;
     private AppointmentStatus status;
 }

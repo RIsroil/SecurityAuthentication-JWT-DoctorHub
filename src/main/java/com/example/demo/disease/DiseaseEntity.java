@@ -22,6 +22,9 @@ public class DiseaseEntity {
     private String diseaseName;
     private Double price;
 
+    @Enumerated(EnumType.STRING)
+    private CurrencyType currency;
+
     @ManyToOne
     @JoinColumn(name = "branch_id")
     private BranchEntity branch;

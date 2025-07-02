@@ -51,6 +51,6 @@ public class AppointmentEntity {
 
     private String customReason;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private ChatEntity chat;
 }

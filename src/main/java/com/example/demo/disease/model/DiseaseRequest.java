@@ -1,5 +1,6 @@
 package com.example.demo.disease.model;
 
+import com.example.demo.disease.CurrencyType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,4 +13,6 @@ public class DiseaseRequest {
     private String diseaseName;
     @NotBlank
     private Double price;
+
+    private CurrencyType currency;
 }

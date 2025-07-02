@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.Data;
 import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
@@ -17,7 +18,7 @@ public class JwtService {
     private final long accessTokenExpiration = 1000 * 60 * 15; // 15 min
     private final long refreshTokenExpiration = 1000L * 60 * 60 * 24 * 7; // 7 days
 
-    private Key getSignInKey() {
+    public Key getSignInKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 

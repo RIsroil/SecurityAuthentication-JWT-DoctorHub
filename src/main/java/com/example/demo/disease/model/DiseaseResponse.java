@@ -12,5 +12,5 @@ public class DiseaseResponse {
     private Long branchId;
     private String branchName;
     private String diseaseName;
-    private Double price;
+    private String price;
 }

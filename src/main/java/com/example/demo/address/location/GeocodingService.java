@@ -57,13 +57,12 @@ public class GeocodingService {
         double[] result = tryGeocode(addressOrLink);
         if (result != null) return result;
 
-        return new double[]{41.3111, 69.2797};
+        return new double[]{41.3111, 69.2797}; // Default coordinates (Tashkent)
     }
-
 
     private double[] extractCoordinatesFromLink(String url) {
         try {
-            // @41.5402735,60.4086114,203m formatidagi linkdan koordinatalar olish
+            // Pattern for @lat,lon (e.g., @41.6533587,60.2746009)
             Pattern patternAt = Pattern.compile("@(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)");
             Matcher matcherAt = patternAt.matcher(url);
 
@@ -73,7 +72,7 @@ public class GeocodingService {
                 return new double[]{lat, lon};
             }
 
-            // Agar boshqa formatda bo‘lsa, boshqa parsing qo‘llash
+            // Pattern for /place/lat,lon (e.g., /place/41.6533587,60.2746009)
             Pattern patternPlace = Pattern.compile("/place/(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)");
             Matcher matcherPlace = patternPlace.matcher(url);
 
@@ -83,7 +82,7 @@ public class GeocodingService {
                 return new double[]{lat, lon};
             }
 
-            // Agar `query=41.5402735,60.4086114` bo‘lsa
+            // Pattern for query=lat,lon (e.g., query=41.6533587,60.2746009)
             Pattern patternQuery = Pattern.compile("query=(-?\\d+\\.\\d+),(-?\\d+\\.\\d+)");
             Matcher matcherQuery = patternQuery.matcher(url);
 
@@ -93,12 +92,20 @@ public class GeocodingService {
                 return new double[]{lat, lon};
             }
 
+            // Pattern for data section (e.g., !8m2!3d41.6528687!4d60.2956173)
+            Pattern patternData = Pattern.compile("!3d(-?\\d+\\.\\d+)!4d(-?\\d+\\.\\d+)");
+            Matcher matcherData = patternData.matcher(url);
+
+            if (matcherData.find()) {
+                double lat = Double.parseDouble(matcherData.group(1));
+                double lon = Double.parseDouble(matcherData.group(2));
+                return new double[]{lat, lon};
+            }
+
         } catch (Exception e) {
             throw new RuntimeException("Koordinatalarni linkdan ajratib bo‘lmadi: " + e.getMessage());
         }
 
         throw new RuntimeException("Linkda koordinatalar topilmadi.");
     }
-
-
 }

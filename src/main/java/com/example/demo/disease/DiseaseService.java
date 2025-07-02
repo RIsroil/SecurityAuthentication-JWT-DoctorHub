@@ -23,7 +23,7 @@ public class DiseaseService {
     private final BranchRepository branchRepository;
     private final AuthHelperService authHelperService;
 
-    public DiseaseResponse create(Principal principal,Long branchId, DiseaseRequest request) {
+    public DiseaseResponse create(Principal principal, Long branchId, DiseaseRequest request) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(branchId)
@@ -35,6 +35,7 @@ public class DiseaseService {
         DiseaseEntity entity = DiseaseEntity.builder()
                 .diseaseName(request.getDiseaseName())
                 .price(request.getPrice())
+                .currency(request.getCurrency())
                 .branch(branch)
                 .build();
         diseaseRepository.save(entity);
@@ -77,6 +78,7 @@ public class DiseaseService {
 
         if (request.getDiseaseName() != null) disease.setDiseaseName(request.getDiseaseName());
         if (request.getPrice() != null) disease.setPrice(request.getPrice());
+        if (request.getCurrency() !=null) disease.setCurrency(request.getCurrency());
         diseaseRepository.save(disease);
         return mapToResponse(disease);
     }
@@ -96,12 +98,17 @@ public class DiseaseService {
     }
 
     public DiseaseResponse mapToResponse(DiseaseEntity entity) {
+        String currencyIcon = switch (entity.getCurrency()) {
+            case DOLLAR -> "$";
+            case SUM -> "сум";
+            case RUB -> "₽";
+        };
         return DiseaseResponse.builder()
                 .id(entity.getId())
                 .branchId(entity.getBranch().getId())
                 .branchName(entity.getBranch().getBranchName())
                 .diseaseName(entity.getDiseaseName())
-                .price(entity.getPrice())
+                .price(String.valueOf(entity.getPrice()+ " " + currencyIcon))
                 .build();
     }
 

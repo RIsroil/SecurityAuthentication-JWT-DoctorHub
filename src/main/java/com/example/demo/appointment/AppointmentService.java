@@ -5,6 +5,7 @@ import com.example.demo.appointment.model.AppointmentResponse;
 import com.example.demo.branch.BranchEntity;
 import com.example.demo.branch.BranchRepository;
 import com.example.demo.chat.ChatEntity;
+import com.example.demo.chat.ChatRepository;
 import com.example.demo.chat.ChatService;
 import com.example.demo.disease.DiseaseEntity;
 import com.example.demo.disease.DiseaseRepository;
@@ -16,6 +17,7 @@ import com.example.demo.patient.PatientEntity;
 import com.example.demo.patient.PatientRepository;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.auth.AuthHelperService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,9 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
     private final AuthHelperService authHelperService;
     private final MessageService messageService;
+    private final ChatRepository chatRepository;
 
+    @Transactional
     public AppointmentResponse create(Principal principal, Long doctorId, AppointmentRequest request) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
 
@@ -61,7 +65,10 @@ public class AppointmentService {
             diseaseEntity = diseaseRepository.findById(diseaseId)
                     .orElseThrow(() -> new RuntimeException("Disease topilmadi"));
         }
+
+        // Ensure ChatEntity is persisted
         ChatEntity chat = chatService.createOrGetChat(principal, doctorId);
+        chat = chatRepository.save(chat); // Explicitly save the ChatEntity
 
         AppointmentEntity appointmentEntity = AppointmentEntity.builder()
                 .doctor(doctor)
@@ -184,6 +191,7 @@ public class AppointmentService {
 
     private AppointmentResponse mapToResponse(AppointmentEntity appointmentEntity) {
         return AppointmentResponse.builder()
+                .chatId(appointmentEntity.getChat().getId())
                 .id(appointmentEntity.getId())
                 .doctorId(appointmentEntity.getDoctor().getId())
                 .doctorName(appointmentEntity.getDoctor().getFirstname())
@@ -196,6 +204,7 @@ public class AppointmentService {
                 .date(appointmentEntity.getDate())
                 .time(appointmentEntity.getTime())
                 .customReason(appointmentEntity.getCustomReason())
+                .price(appointmentEntity.getDisease().getPrice() + " " + appointmentEntity.getDisease().getCurrency())
                 .status(appointmentEntity.getStatus())
                 .build();
     }

@@ -70,13 +70,13 @@ public class BranchService {
 
         return branches.stream()
                 .map(branch -> {
-                    List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
-                            .map(disease -> DiseaseResponse.builder()
-                                    .id(disease.getId())
-                                    .diseaseName(disease.getDiseaseName())
-                                    .price(disease.getPrice())
-                                    .build())
-                            .toList();
+//                    List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+//                            .map(disease -> DiseaseResponse.builder()
+//                                    .id(disease.getId())
+//                                    .diseaseName(disease.getDiseaseName())
+//                                    .price(disease.getPrice())
+//                                    .build())
+//                            .toList();
 
                     return BranchResponse.builder()
                             .branchId(branch.getId())
@@ -87,8 +87,8 @@ public class BranchService {
                             .branchImageUrl(branch.getBranchImageUrl())
                             .branchDescription(branch.getBranchDescription())
                             .doctorId(branch.getDoctorEntity().getId())
-                            .atDate(branch.getAtDate())
-                            .diseases(diseaseResponses)
+                            .availableDays(branch.getAvailableDays())
+//                            .diseases(diseaseResponses)
                             .build();
                 })
                 .toList();
@@ -96,35 +96,36 @@ public class BranchService {
 
     public ResponseEntity<?> deleteBranch(Principal principal, Long id) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
-        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-        BranchEntity branch = branchRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Branch not found"));
-        if (!branch.getId().equals(doctor.getId())) {
-            throw new RuntimeException("You can not delete this branch");
-        }
-
-        branchRepository.delete(branch);
-        return ResponseEntity.ok("Branch muvaffaqiyatli o'chirildi");
-    }
-
-    public ResponseEntity<?> updateBranch(Principal principal, Long id, BranchUpdateRequest request) {
-        UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
         DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
         BranchEntity branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
         if (!branch.getDoctorEntity().getId().equals(doctor.getId())) {
-            throw new RuntimeException("You can not update this branch");
+            throw new RuntimeException("You cannot delete this branch");
         }
 
-        if (request.getBranchName() != null) branch.setBranchName(request.getBranchName ());
+        branchRepository.delete(branch);
+        return ResponseEntity.ok("Branch successfully deleted");
+    }
+
+    public ResponseEntity<?> updateBranch(Principal principal, Long id, BranchUpdateRequest request) {
+        UserEntity user = authHelperService.getUserFromPrincipal(principal);
+        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
+        BranchEntity branch = branchRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        if (!branch.getDoctorEntity().getId().equals(doctor.getId())) {
+            throw new RuntimeException("You cannot update this branch");
+        }
+
+        if (request == null) {
+            return ResponseEntity.badRequest().body("Update request cannot be null");
+        }
+
+        if (request.getBranchName() != null) branch.setBranchName(request.getBranchName());
         if (request.getBranchCity() != null) branch.setBranchCity(request.getBranchCity());
         if (request.getBranchRegion() != null) branch.setBranchRegion(request.getBranchRegion());
         if (request.getBranchDescription() != null) branch.setBranchDescription(request.getBranchDescription());
         if (request.getBranchImageUrl() != null) branch.setBranchImageUrl(request.getBranchImageUrl());
-        if (request.getBranchDescription() != null) branch.setBranchDescription(request.getBranchDescription());
-        if (request.getAtDate() != null) branch.setAtDate(request.getAtDate());
+        if (request.getAvailableDays() != null) branch.setAvailableDays(request.getAvailableDays());
 
         if (request.getBranchLocationLink() != null) {
             if (!request.getBranchLocationLink().startsWith("https://www.google.com/maps")) {
@@ -147,13 +148,13 @@ public class BranchService {
     public BranchResponse getBranchById(Long id) {
         BranchEntity branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
-        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
-                .map(disease -> DiseaseResponse.builder()
-                        .id(disease.getId())
-                        .diseaseName(disease.getDiseaseName())
-                        .price(disease.getPrice())
-                        .build())
-                .toList();
+//        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+//                .map(disease -> DiseaseResponse.builder()
+//                        .id(disease.getId())
+//                        .diseaseName(disease.getDiseaseName())
+//                        .price(disease.getPrice())
+//                        .build())
+//                .toList();
 
         return BranchResponse.builder()
                 .branchId(branch.getId())
@@ -163,20 +164,20 @@ public class BranchService {
                 .branchLocationLink(branch.getBranchLocationLink())
                 .branchImageUrl(branch.getBranchImageUrl())
                 .branchDescription(branch.getBranchDescription())
-                .atDate(branch.getAtDate())
+                .availableDays(branch.getAvailableDays())
                 .doctorId(branch.getDoctorEntity().getId())
-                .diseases(diseaseResponses)
+//                .diseases(diseaseResponses)
                 .build();
     }
 
     private ResponseEntity<BranchResponse> mapToResponse(BranchEntity branch){
-        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
-                .map(disease -> DiseaseResponse.builder()
-                        .id(disease.getId())
-                        .diseaseName(disease.getDiseaseName())
-                        .price(disease.getPrice())
-                        .build())
-                .toList();
+//        List<DiseaseResponse> diseaseResponses = branch.getDiseases().stream()
+//                .map(disease -> DiseaseResponse.builder()
+//                        .id(disease.getId())
+//                        .diseaseName(disease.getDiseaseName())
+//                        .price(disease.getPrice())
+//                        .build())
+//                .toList();
 
         return ResponseEntity.ok(BranchResponse.builder()
                 .branchId(branch.getId())
@@ -186,9 +187,10 @@ public class BranchService {
                 .branchLocationLink(branch.getBranchLocationLink())
                 .branchImageUrl(branch.getBranchImageUrl())
                 .branchDescription(branch.getBranchDescription())
-                .atDate(branch.getAtDate())
+                .availableDays(branch.getAvailableDays())
                 .doctorId(branch.getDoctorEntity().getId())
-                .diseases(diseaseResponses)
+//                .diseases(diseaseResponses)
                 .build());
     }
+
 }

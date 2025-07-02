@@ -1,18 +1,24 @@
 package com.example.demo.chat;
 
+import com.example.demo.appointment.AppointmentEntity;
+import com.example.demo.appointment.AppointmentRepository;
+import com.example.demo.appointment.AppointmentStatus;
 import com.example.demo.chat.model.ChatResponse;
 import com.example.demo.doctor.DoctorEntity;
 import com.example.demo.doctor.DoctorRepository;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.message.MessageEntity;
 import com.example.demo.message.model.MessageResponse;
 import com.example.demo.patient.PatientEntity;
 import com.example.demo.patient.PatientRepository;
 import com.example.demo.user.UserEntity;
 import com.example.demo.user.UserRepository;
 import com.example.demo.user.auth.AuthHelperService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +30,7 @@ public class ChatService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final AuthHelperService authHelperService;
+    private final AppointmentRepository appointmentRepository;
 
     public ChatEntity createOrGetChat(Principal principal, Long doctorId) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
@@ -66,24 +73,46 @@ public class ChatService {
         }
     }
 
-    public void deleteChat(Principal principal, Long chatId) {
+    @Transactional
+    public void deleteChat(Principal principal, Long chatId) throws AccessDeniedException {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
         ChatEntity chat = chatRepository.findById(chatId)
-                .orElseThrow(() -> new ResourceNotFoundException("Chat not found with ID: " + chatId));
+                .orElseThrow(() -> new RuntimeException("Chat not found"));
 
+        // Verify authorization
+        if (!chat.getDoctor().getUser().getId().equals(user.getId()) &&
+                !chat.getPatient().getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You are not authorized to delete this chat");
+        }
 
-        Long doctorUserId = chat.getDoctor().getUser().getId();
-        Long patientUserId = chat.getPatient().getUser().getId();
+        // Handle related appointments
+        List<AppointmentEntity> appointments = appointmentRepository.findAllByChat_Id(chatId);
+        for (AppointmentEntity appointment : appointments) {
+            appointment.setChat(null);
+            appointmentRepository.save(appointment);
+        }
 
-        boolean isOwner = user.getId().equals(doctorUserId) || user.getId().equals(patientUserId);
+        boolean hasPending = appointments.stream()
+                .anyMatch(a -> a.getStatus() == AppointmentStatus.PENDING);
+        if (hasPending) {
+            throw new RuntimeException("Chatni o‘chira olmaysiz, chunki appointment PENDING holatida");
+        }
 
-        if (!isOwner) {
-            throw new RuntimeException("Siz bu chatni o‘chirishga ruxsatingiz yo‘q");
+        LocalDateTime now = LocalDateTime.now();
+        boolean hasFutureApproved = appointments.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.APPROVED)
+                .anyMatch(a -> {
+                    LocalDateTime appointmentDateTime =
+                            LocalDateTime.of(a.getDate(), a.getTime());
+                    return appointmentDateTime.isAfter(now);
+                });
+        if (hasFutureApproved) {
+            throw new RuntimeException("Chatni o‘chira olmaysiz, tasdiqlangan appointment vaqti hali kelmagan");
         }
 
         chatRepository.delete(chat);
     }
+
 
     public List<MessageResponse> getMessagesByChatId(Principal principal, Long chatId) {
         UserEntity user = authHelperService.getUserFromPrincipal(principal);

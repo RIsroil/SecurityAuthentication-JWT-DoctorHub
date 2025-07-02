@@ -37,23 +37,81 @@ public class SecurityConfig {
         return username -> userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/**"
-                        ).permitAll()
-                        // 🔴 Boshqa barcha requestlar faqat avtorizatsiyadan o‘tganlar uchun
+                        // Public endpoints (accessible to everyone, no authentication)
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/patient/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/doctor/register").permitAll() // Adjust if admin-only
+                        .requestMatchers(HttpMethod.GET, "/specialization/all").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/specialization/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/certificate/**").permitAll() // For doctor certificates
+                        .requestMatchers(HttpMethod.GET, "/branch/**").permitAll() // For branch details
+                        .requestMatchers(HttpMethod.GET, "/addresses").permitAll() // Get all addresses public
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/webjars/swagger-ui/**").permitAll()
+
+                        // Doctor-specific endpoints
+                        .requestMatchers(HttpMethod.POST, "/branch").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/branch").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.PATCH, "/branch/**").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/branch/**").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/certificate/upload").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/certificate").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/certificate").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/certificate/**").hasAuthority("ROLE_DOCTOR")
+
+                        // Patient-specific endpoints
+                        .requestMatchers(HttpMethod.POST, "/chat").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers(HttpMethod.POST, "/appointment/**").hasAuthority("ROLE_PATIENT")
+
+                        // Authenticated endpoints (any authenticated user with specific roles)
+                        .requestMatchers(HttpMethod.GET, "/auth/profile").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/auth/update").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/change-password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/message/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.PUT, "/message/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/message/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/chat").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/chat/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/chat/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/appointment").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.PATCH, "/appointment/**").hasAnyAuthority("ROLE_DOCTOR","ROLE_PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/disease").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/disease/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/disease").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.PATCH, "/disease/**").hasAuthority("ROLE_DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/disease/**").hasAuthority("ROLE_DOCTOR")
+
+                        // Admin-only endpoints for addresses
+                        .requestMatchers(HttpMethod.POST, "/addresses").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/addresses/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/addresses/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/addresses/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/addresses/id").hasAuthority("ROLE_ADMIN")
+
+                        // Admin-only endpoints for certificate status
+                        .requestMatchers(HttpMethod.PATCH, "/certificate/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/certificate/status").hasAuthority("ROLE_ADMIN")
+
+                        // Admin has access to ALL endpoints
+                        .requestMatchers("/**").hasAuthority("ROLE_ADMIN")
+
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

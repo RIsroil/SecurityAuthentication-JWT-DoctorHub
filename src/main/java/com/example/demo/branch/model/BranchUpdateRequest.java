@@ -1,9 +1,13 @@
 package com.example.demo.branch.model;
 
+import com.example.demo.branch.DayOfWeek;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+//import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class BranchUpdateRequest {
@@ -16,7 +20,6 @@ public class BranchUpdateRequest {
     private String branchImageUrl;
     private String branchDescription;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    @Schema(type = "string", example = "2024-04-18")
-    private LocalDate atDate;
+    @Schema(example = "[\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\"]")
+    private List<DayOfWeek> availableDays;
 }

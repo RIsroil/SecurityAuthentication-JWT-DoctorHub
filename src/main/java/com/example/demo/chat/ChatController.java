@@ -5,6 +5,7 @@ import com.example.demo.message.model.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteChat(Principal principal, @PathVariable Long id) {
+    public void deleteChat(Principal principal, @PathVariable Long id) throws AccessDeniedException {
         chatService.deleteChat(principal, id);
     }
 }
