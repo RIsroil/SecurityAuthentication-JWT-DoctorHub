@@ -16,7 +16,7 @@ public class EmailService {
         message.setTo(toEmail);
         message.setSubject("Parolni tiklash");
         message.setText("Parolni tiklash uchun quyidagi havolani bosing:\n\n" + resetLink);
-        message.setFrom("your_email@gmail.com");  // Gmail'dagi emailingizni yozing
+        message.setFrom("palankasovbirnarsa@gmail.com");  // Gmail'dagi emailingizni yozing
 
         mailSender.send(message);
     }
