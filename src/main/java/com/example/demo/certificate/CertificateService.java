@@ -1,132 +1,19 @@
 package com.example.demo.certificate;
 
-import com.example.demo.certificate.minio.MinioService;
 import com.example.demo.certificate.model.CertificateRequest;
-import com.example.demo.certificate.model.CertificateResponse;
+import com.example.demo.certificate.model.CertificateView;
 import com.example.demo.certificate.role.CertificateStatus;
-import com.example.demo.doctor.DoctorEntity;
-import com.example.demo.doctor.DoctorRepository;
-import com.example.demo.jwt.JwtService;
-import com.example.demo.user.Role;
-import com.example.demo.user.UserEntity;
-import com.example.demo.user.UserRepository;
-import com.example.demo.user.auth.AuthHelperService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class CertificateService {
-
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final CertificateRepository certificateRepository;
-    private final DoctorRepository doctorRepository;
-    private final MinioService minioService;
-    private final AuthHelperService authHelperService;
-
-    public CertificateResponse addCertificate(Principal principal, CertificateRequest dto) {
-        UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
-        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-
-        CertificateEntity cert = new CertificateEntity();
-        cert.setTitle(dto.getTitle());
-        cert.setFileUrl(dto.getFileUrl());
-        cert.setStatus(CertificateStatus.PENDING);
-        cert.setDoctor(doctor);
-        certificateRepository.save(cert);
-
-        return mapToResponse(cert);
-    }
-
-    public ResponseEntity<?> updateStatus(Long id, CertificateStatus status) {
-        CertificateEntity cert = certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found"));
-
-        cert.setStatus(status);
-        certificateRepository.save(cert);
-
-        DoctorEntity doctor = cert.getDoctor();
-        long verifiedCount = doctor.getCertificates().stream()
-                .filter(c -> c.getStatus() == CertificateStatus.VERIFIED)
-                .count();
-        doctor.setVerified(verifiedCount > 0);
-        doctorRepository.save(doctor);
-
-        return ResponseEntity.ok("Status muvaffaqiyatli yangilandi");
-    }
-
-    public List<CertificateResponse> getMyCertificates(Principal principal) {
-        UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
-        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-        List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctor.getId());
-
-        return certEntities.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<CertificateResponse> getDoctorAllCertificatesByDoctorId(Long doctorId) {
-        DoctorEntity doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
-
-        List<CertificateEntity> certEntities = certificateRepository.findAllCertificatesByDoctorId(doctorId);
-        return certEntities.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public ResponseEntity<?> deleteCertificate(Principal principal, Long id) {
-        UserEntity user = authHelperService.getUserFromPrincipal(principal);
-
-        DoctorEntity doctor = doctorRepository.findByUser_Id(user.getId());
-        CertificateEntity cert = certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found"));
-
-        if (!cert.getDoctor().getId().equals(doctor.getId()) || user.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("You can not delete this certificate");
-        }
-
-        try {
-            minioService.deleteFile(cert.getFileUrl());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("MinIO faylini o'chirishda xatolik: " + ex.getMessage());
-        }
-        certificateRepository.delete(cert);
-
-        long verifiedCount = doctor.getCertificates().stream()
-                .filter(c -> !c.getId().equals(id))
-                .filter(c -> c.getStatus() == CertificateStatus.VERIFIED)
-                .count();
-
-        doctor.setVerified(verifiedCount > 0);
-        doctorRepository.save(doctor);
-
-        return ResponseEntity.ok("Certificate muvaffaqiyatli o'chirildi");
-    }
-
-    public List<CertificateResponse> getCertificatesByStatus(CertificateStatus status){
-        return certificateRepository.findAllCertificatesByStatus(status).stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    private CertificateResponse mapToResponse(CertificateEntity entity){
-        return CertificateResponse.builder()
-                .id(entity.getId())
-                .doctorId(entity.getDoctor().getId())
-                .title(entity.getTitle())
-                .fileUrl(entity.getFileUrl())
-                .status(entity.getStatus())
-                .build();
-    }
+public interface CertificateService {
+    String uploadCertificateFile(MultipartFile file); // Returns file URL or an identifier
+    CertificateView addCertificate(Principal principal, CertificateRequest request);
+    List<CertificateView> getMyCertificates(Principal principal);
+    String updateCertificateStatus(Long certificateId, CertificateStatus status); // Returns a success message
+    List<CertificateView> getDoctorAllCertificatesByDoctorId(Long doctorId);
+    String deleteCertificate(Principal principal, Long certificateId); // Returns a success/error message
+    List<CertificateView> getCertificatesByStatus(CertificateStatus status);
 }

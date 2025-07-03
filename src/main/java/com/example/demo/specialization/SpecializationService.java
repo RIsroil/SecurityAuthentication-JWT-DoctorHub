@@ -1,42 +1,13 @@
 package com.example.demo.specialization;
 
-import com.example.demo.exception.DuplicateResourceException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.example.demo.specialization.model.SpecializationView;
 
-@Service
-@RequiredArgsConstructor
-public class SpecializationService {
-    private final SpecializationRepository specializationRepository;
+import java.util.List;
 
-    public void create(RequestSpecialization requestSpecialization) {
-        String name = requestSpecialization.getSpecializationName();
-
-        if (specializationRepository.findBySpecializationName(name).isPresent()) {
-            throw new DuplicateResourceException("This Specialization already exists.");
-        }
-        SpecializationEntity entity = new SpecializationEntity();
-        entity.setSpecializationName(name);
-
-        specializationRepository.save(entity);
-    }
-
-    public void delete(Long id) {
-        specializationRepository.deleteById(id);
-    }
-
-    public SpecializationEntity getById(Long id) {
-        return specializationRepository.findById(id).orElseThrow(() -> new RuntimeException("Specialization not found."));
-    }
-
-    public Iterable<SpecializationEntity> getAll() {
-        return specializationRepository.findAll();
-    }
-
-    public void update(Long id, RequestSpecialization requestSpecialization) {
-        SpecializationEntity entity = specializationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
-        entity.setSpecializationName(requestSpecialization.getSpecializationName());
-        specializationRepository.save(entity);
-    }
+public interface SpecializationService {
+    SpecializationView createSpecialization(RequestSpecialization requestSpecialization);
+    void deleteSpecialization(Long id);
+    SpecializationView getSpecializationById(Long id);
+    List<SpecializationView> getAllSpecializations();
+    SpecializationView updateSpecialization(Long id, RequestSpecialization requestSpecialization);
 }
