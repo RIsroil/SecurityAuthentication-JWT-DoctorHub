@@ -57,7 +57,6 @@
 /app/src/main/java/com/example/demo/exception/InvalidTokenException.java
 /app/src/main/java/com/example/demo/exception/ResourceNotFoundException.java
 /app/src/main/java/com/example/demo/i18n_config/LocaleResolverUtil.java
-/app/src/main/java/com/example/demo/i18n_config/TranslationService.java
 /app/src/main/java/com/example/demo/i18n_config/WebMvcConfig.java
 /app/src/main/java/com/example/demo/jwt/JwtAuthenticationFilter.java
 /app/src/main/java/com/example/demo/jwt/JwtService.java

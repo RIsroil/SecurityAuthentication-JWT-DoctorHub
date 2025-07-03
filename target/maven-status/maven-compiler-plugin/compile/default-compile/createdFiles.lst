@@ -1,6 +1,4 @@
 com/example/demo/i18n_config/WebMvcConfig.class
 com/example/demo/i18n_config/LocaleResolverUtil.class
 com/example/demo/exception/GlobalExceptionHandler.class
-com/example/demo/i18n_config/TranslationService$1.class
 com/example/demo/exception/ErrorResponse.class
-com/example/demo/i18n_config/TranslationService.class
