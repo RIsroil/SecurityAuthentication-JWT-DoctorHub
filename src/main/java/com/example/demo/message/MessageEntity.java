@@ -41,4 +41,6 @@ public class MessageEntity {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean systemGenerated = false;
 
+    private Long replayId;
+
 }

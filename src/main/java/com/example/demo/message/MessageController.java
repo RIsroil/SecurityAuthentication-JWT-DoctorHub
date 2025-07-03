@@ -4,7 +4,6 @@ import com.example.demo.message.model.MessageRequest;
 import com.example.demo.message.model.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 
 @RestController
@@ -19,7 +18,7 @@ public class MessageController {
     }
 
     @PutMapping("/{id}")
-    public void updateMessage(Principal principal, @PathVariable Long id, @RequestBody MessageRequest request) {
+    public void updateMessage(Principal principal, @PathVariable Long id, @RequestBody MessageRequest request)  {
         messageService.updateMessage(principal, id, request);
     }
 

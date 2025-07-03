@@ -12,4 +12,5 @@ public class MessageResponse {
     private String content;
     private String senderName;
     private LocalDateTime timestamp;
+    private Long replayId;
 }

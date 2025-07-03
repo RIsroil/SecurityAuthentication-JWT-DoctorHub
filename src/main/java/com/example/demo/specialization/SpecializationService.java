@@ -1,5 +1,6 @@
 package com.example.demo.specialization;
 
+import com.example.demo.exception.DuplicateResourceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,14 +11,14 @@ public class SpecializationService {
 
     public void create(RequestSpecialization requestSpecialization) {
         String name = requestSpecialization.getSpecializationName();
-        System.out.println("Yaratilayotgan specialization: " + name);
 
+        if (specializationRepository.findBySpecializationName(name).isPresent()) {
+            throw new DuplicateResourceException("This Specialization already exists.");
+        }
         SpecializationEntity entity = new SpecializationEntity();
         entity.setSpecializationName(name);
 
         specializationRepository.save(entity);
-
-        System.out.println("Bazaga saqlandi: " + entity.getSpecializationName());
     }
 
     public void delete(Long id) {
@@ -36,6 +37,6 @@ public class SpecializationService {
         SpecializationEntity entity = specializationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
         entity.setSpecializationName(requestSpecialization.getSpecializationName());
-        SpecializationEntity updated = specializationRepository.save(entity);
+        specializationRepository.save(entity);
     }
 }

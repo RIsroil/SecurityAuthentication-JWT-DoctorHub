@@ -5,7 +5,6 @@ import com.example.demo.chat.ChatRepository;
 import com.example.demo.message.model.MessageRequest;
 import com.example.demo.message.model.MessageResponse;
 import com.example.demo.user.UserEntity;
-import com.example.demo.user.UserRepository;
 import com.example.demo.user.auth.AuthHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,9 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
-    private final UserRepository userRepository;
     private final AuthHelperService authHelperService;
 
     public MessageResponse sendMessage(Principal principal, Long chatId, MessageRequest content, boolean isSystemGenerated) {
@@ -26,12 +25,19 @@ public class MessageService {
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
 
+        Long replayId = null;
+        if (content.getReplayId() != null) {
+            MessageEntity message = messageRepository.findById(content.getReplayId()).orElseThrow(() -> new RuntimeException("Main message not found to Replay it"));
+            replayId = message.getId();
+        }
+
         MessageEntity message = MessageEntity.builder()
                 .chat(chat)
                 .sender(user)
                 .content(content.getContent())
                 .systemGenerated(isSystemGenerated)
                 .timestamp(LocalDateTime.now())
+                .replayId(replayId)
                 .build();
         messageRepository.save(message);
         return MessageResponse.builder()
@@ -39,6 +45,7 @@ public class MessageService {
                 .content( message.getContent() )
                 .senderName( message.getSender().getUsername() )
                 .timestamp( message.getTimestamp() )
+                .replayId( message.getReplayId() )
                 .build();
     }
 
@@ -75,4 +82,6 @@ public class MessageService {
 
         messageRepository.delete(message);
     }
+
+
 }
