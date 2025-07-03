@@ -85,7 +85,7 @@ public class AppointmentService {
         appointmentRepository.save(appointmentEntity);
 
         String messageText = buildAppointmentMessage(appointmentEntity);
-        messageService.sendMessage(principal, chat.getId(), new MessageRequest(messageText), true);
+        messageService.sendMessage(principal, chat.getId(), new MessageRequest(messageText, null), true);
 
         return mapToResponse(appointmentEntity);
     }
@@ -146,7 +146,7 @@ public class AppointmentService {
         String message = "✅ Appointment tasdiqlandi: " +
                 appointment.getDate() + " " + appointment.getTime();
 
-        messageService.sendMessage(principal, appointment.getChat().getId(), new MessageRequest(message), true);
+        messageService.sendMessage(principal, appointment.getChat().getId(), new MessageRequest(message,null), true);
     }
 
     public void handleCancellation(Principal principal, Long appointmentId) {
@@ -177,7 +177,7 @@ public class AppointmentService {
                 ? "🛑 Bemordan appointmentni bekor qilish so‘rovi."
                 : "🛑 Appointment shifokor tomonidan bekor qilindi.";
 
-        messageService.sendMessage(principal, appointment.getChat().getId(), new MessageRequest(cancelMessage), true);
+        messageService.sendMessage(principal, appointment.getChat().getId(), new MessageRequest(cancelMessage, null), true);
     }
 
     private String buildAppointmentMessage(AppointmentEntity appointment) {

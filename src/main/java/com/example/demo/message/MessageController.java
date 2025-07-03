@@ -14,7 +14,7 @@ public class MessageController {
     private final MessageService messageService;
 
     @PostMapping("/{id}")
-    public MessageResponse sendMessage(Principal principal, @PathVariable Long id, @RequestBody MessageRequest request) {
+    public MessageResponse sendMessage(Principal principal, @PathVariable Long id, @RequestBody(required = false) MessageRequest request) {
         return messageService.sendMessage(principal, id, request, false);
     }
 

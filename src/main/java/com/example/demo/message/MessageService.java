@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
-    private final UserRepository userRepository;
     private final AuthHelperService authHelperService;
 
     public MessageResponse sendMessage(Principal principal, Long chatId, MessageRequest content, boolean isSystemGenerated) {
@@ -25,6 +24,10 @@ public class MessageService {
 
         ChatEntity chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
+        Long replayId = null;
+        if (messageRepository.findById(content.getReplayId()).isPresent()) {
+            replayId = content.getReplayId();
+        }
 
         MessageEntity message = MessageEntity.builder()
                 .chat(chat)
@@ -32,6 +35,7 @@ public class MessageService {
                 .content(content.getContent())
                 .systemGenerated(isSystemGenerated)
                 .timestamp(LocalDateTime.now())
+                .replayId(replayId)
                 .build();
         messageRepository.save(message);
         return MessageResponse.builder()
@@ -39,6 +43,7 @@ public class MessageService {
                 .content( message.getContent() )
                 .senderName( message.getSender().getUsername() )
                 .timestamp( message.getTimestamp() )
+                .replayId( message.getReplayId() )
                 .build();
     }
 

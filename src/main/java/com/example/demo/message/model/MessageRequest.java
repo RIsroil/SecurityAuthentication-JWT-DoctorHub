@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MessageRequest {
     private String content;
-    private Long replayId;
+    private Long replayId = null;
 }
