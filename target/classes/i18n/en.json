@@ -1,0 +1,10 @@
+{
+  "greeting": "Hello!",
+  "error_not_found": "Resource not found.",
+  "error_unauthorized": "Unauthorized access.",
+  "error_internal_server": "Internal server error.",
+  "error_bad_request": "Bad request.",
+  "error_validation": "Validation failed.",
+  "error_forbidden": "Access forbidden.",
+  "error_custom_resource_not_found": "Custom resource {0} was not found."
+}
