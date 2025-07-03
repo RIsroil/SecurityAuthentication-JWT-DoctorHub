@@ -4,38 +4,28 @@ import com.example.demo.user.profile.dto.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize; // Assuming PreAuthorize for authenticated access
 
 import java.security.Principal;
 
 @RestController
-@RequestMapping("/auth") // Base path from original controller
+@RequestMapping("/auth")
 @RequiredArgsConstructor
-public class ProfileController implements ProfileControllerApi {
+public class ProfileController {
 
-    private final ProfileService profileService; // Will be the interface
+    private final ProfileService profileService;
 
-    @Override
     @GetMapping("/profile")
-    @PreAuthorize("isAuthenticated()") // Ensures user is authenticated
-    public ResponseEntity<Object> getProfile(Principal principal) {
-        Object profileView = profileService.getProfile(principal);
-        return ResponseEntity.ok(profileView);
+    public ResponseEntity<?> getProfile(Principal principal) {
+        return ResponseEntity.ok(profileService.getProfile(principal));
     }
 
-    @Override
     @PatchMapping("/update")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> updateProfile(Principal principal, @RequestBody ProfileUpdateRequest request) {
-        String message = profileService.updateProfile(principal, request);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> updateProfile(Principal principal, @RequestBody ProfileUpdateRequest request) {
+        return ResponseEntity.ok(profileService.updateProfile(principal, request));
     }
 
-    @Override
     @PostMapping("/change-password")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> changePassword(Principal principal, @RequestBody ChangePasswordRequest request) {
-        String message = profileService.changePassword(principal, request);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> changePassword(Principal principal, @RequestBody ChangePasswordRequest request) {
+        return ResponseEntity.ok(profileService.changePassword(principal, request));
     }
 }
