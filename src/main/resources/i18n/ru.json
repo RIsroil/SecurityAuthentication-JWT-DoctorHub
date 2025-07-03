@@ -1,9 +1,0 @@
-{
-  "greeting": "Привет!",
-  "error_not_found": "Ресурс не найден.",
-  "error_unauthorized": "Несанкционированный доступ.",
-  "error_internal_server": "Внутренняя ошибка сервера.",
-  "error_bad_request": "Неверный запрос.",
-  "error_validation": "Ошибка проверки.",
-  "error_forbidden": "Доступ запрещен."
-}
