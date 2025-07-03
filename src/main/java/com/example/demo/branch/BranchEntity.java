@@ -53,7 +53,7 @@ public class BranchEntity {
     @JsonIgnore
     private DoctorEntity doctorEntity;
 
-//    @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<DiseaseEntity> diseases;
+    @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiseaseEntity> diseases;
 
 }

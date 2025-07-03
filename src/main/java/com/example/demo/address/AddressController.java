@@ -1,7 +1,7 @@
 package com.example.demo.address;
 
 import com.example.demo.address.model.AddressRequest;
-import com.example.demo.address.model.AddressResponse;
+import com.example.demo.address.model.AddressView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
