@@ -1,0 +1,9 @@
+{
+  "greeting": "Salom!",
+  "error_not_found": "Resurs topilmadi.",
+  "error_unauthorized": "Ruxsatsiz kirish.",
+  "error_internal_server": "Ichki server xatosi.",
+  "error_bad_request": "Noto'g'ri so'rov.",
+  "error_validation": "Validatsiya muvaffaqiyatsiz tugadi.",
+  "error_forbidden": "Kirish taqiqlangan."
+}

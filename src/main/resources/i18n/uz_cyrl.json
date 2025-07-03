@@ -1,0 +1,9 @@
+{
+  "greeting": "Салом!",
+  "error_not_found": "Ресурс топилмади.",
+  "error_unauthorized": "Рухсатсиз кириш.",
+  "error_internal_server": "Ички сервер хатоси.",
+  "error_bad_request": "Нотўғри сўров.",
+  "error_validation": "Валидация муваффақиятсиз тугади.",
+  "error_forbidden": "Кириш тақиқланган."
+}
